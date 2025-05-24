@@ -9,12 +9,36 @@ import {
 } from 'react-router-dom';
 import { Github, ExternalLink } from 'lucide-react';
 import logo from './assets/logo.png';
+import ghCopilotLogo from './assets/gh-copilot-logo.png';
+import codingAgentLogo from './assets/coding-agent-logo.png';
+import devinLogo from './assets/devin-logo.png';
+import openaiLogo from './assets/openai-logo.png';
+import sreAgentLogo from './assets/sre-agent-logo.png';
 import './App.css';
 import Modal from './components/ui/Modal';
 
 /* ------------------------------------------------------------------------- */
 /* AGENT CATALOG                                                             */
 /* ------------------------------------------------------------------------- */
+
+// Helper function to get agent logo
+const getAgentLogo = (agentId: string) => {
+  switch (agentId) {
+    case 'github-copilot-completions':
+      return ghCopilotLogo;
+    case 'github-copilot-agent':
+      return codingAgentLogo;
+    case 'devin':
+      return devinLogo;
+    case 'codex-cli':
+      return openaiLogo;
+    case 'sreagent':
+      return sreAgentLogo;
+    default:
+      return ghCopilotLogo; // fallback logo
+  }
+};
+
 const agents = [
   {
     id: 'github-copilot-completions',
@@ -195,14 +219,14 @@ function HomePage() {
 
           <div className="nav-links">
             <a href="#agents">Agents</a>
-            <a href="#integration">Integration</a>
-            <a href="#docs">Documentation</a>
             <a
               href="https://github.com/microsoft/agunblock"
               className="github-btn"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <i className="ms-Icon ms-Icon--GitGraph" />
-              <span>Star on GitHub</span>
+              <span>Explore on GitHub</span>
             </a>
           </div>
         </div>
@@ -280,11 +304,11 @@ function HomePage() {
             <div key={agent.id} className="agent-card" data-category={agent.category}>
               <div className="agent-header">
                 <div className="agent-icon">
-                  {agent.category === 'code-completion' && '🐙'}
-                  {agent.category === 'async-swe' && '🤖'}
-                  {agent.category === 'cli' &&
-                    (agent.id === 'claude-code' ? '🎭' : '🔧')}
-                  {agent.category === 'devops' && '⚡'}
+                  <img 
+                    src={getAgentLogo(agent.id)} 
+                    alt={`${agent.name} logo`}
+                    className="agent-logo"
+                  />
                 </div>
                 <div className="agent-info">
                   <h3>{agent.name}</h3>
@@ -369,13 +393,6 @@ function HomePage() {
       {/* ---------- FOOTER ---------- */}
       <footer>
         <div className="footer-content">
-          <div className="footer-links">
-            <a href="#">Documentation</a>
-            <a href="#">API Reference</a>
-            <a href="#">Contributing</a>
-            <a href="#">License</a>
-            <a href="#">Privacy</a>
-          </div>
           <p style={{ color: 'var(--text-secondary)' }}>
             © {new Date().getFullYear()} Microsoft Corporation. AGUnblock is an
             open source project.
@@ -474,14 +491,14 @@ function RepoPage() {
 
         <div className="nav-links">
           <a href="/#agents">Agents</a>
-          <a href="/#integration">Integration</a>
-          <a href="/#docs">Documentation</a>
           <a
             href="https://github.com/microsoft/agunblock"
             className="github-btn"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             <i className="ms-Icon ms-Icon--GitGraph" />
-            <span>Star on GitHub</span>
+            <span>Explore on GitHub</span>
           </a>
         </div>
       </div>
@@ -603,11 +620,11 @@ function RepoPage() {
                 <div key={agent.id} className="agent-card" data-category={agent.category}>
                   <div className="agent-header">
                     <div className="agent-icon">
-                      {agent.category === 'code-completion' && '🐙'}
-                      {agent.category === 'async-swe' && '🤖'}
-                      {agent.category === 'cli' &&
-                        (agent.id === 'claude-code' ? '🎭' : '🔧')}
-                      {agent.category === 'devops' && '⚡'}
+                      <img 
+                        src={getAgentLogo(agent.id)} 
+                        alt={`${agent.name} logo`}
+                        className="agent-logo"
+                      />
                     </div>
                     <div className="agent-info">
                       <h3>{agent.name}</h3>
@@ -698,13 +715,6 @@ function RepoPage() {
       {/* ---------- FOOTER ---------- */}
       <footer>
         <div className="footer-content">
-          <div className="footer-links">
-            <a href="#">Documentation</a>
-            <a href="#">API Reference</a>
-            <a href="#">Contributing</a>
-            <a href="#">License</a>
-            <a href="#">Privacy</a>
-          </div>
           <p style={{ color: 'var(--text-secondary)' }}>
             © {new Date().getFullYear()} Microsoft Corporation. AGUnblock is an
             open source project.
