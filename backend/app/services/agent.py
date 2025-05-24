@@ -200,46 +200,6 @@ codex optimize -f [filename]
 
 This repository's structure is compatible with Codex CLI's code generation capabilities.""",
 
-            'claude-code': f"""## Claude Code Integration for {repo_name}
-
-This guide will help you use Claude Code with this {language} repository.
-
-### Setup Instructions
-
-1. Access Claude Code through Azure OpenAI Service
-2. Set up your authentication keys
-3. Clone the repository locally
-4. Use Claude Code to analyze specific files
-
-
-```bash
-pip install claude-code-cli
-
-claude-code config set api_key YOUR_API_KEY
-
-# Clone the repository
-git clone https://github.com/{repo_name}.git
-cd {repo_name.split('/')[1]}
-```
-
-
-```bash
-# Analyze a file
-claude analyze -f [filename]
-
-claude suggest -d [directory]
-
-claude document -f [filename]
-```
-
-
-- Use Claude Code to understand complex code patterns
-- Generate comprehensive documentation
-- Get suggestions for code improvements
-- Use for security analysis and vulnerability detection
-
-Claude Code can help explain complex parts of this codebase and suggest improvements.""",
-
             'sreagent': f"""## SREAgent Configuration for {repo_name}
 
 This guide will help you set up SREAgent for this {language} repository.

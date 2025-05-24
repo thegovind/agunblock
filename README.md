@@ -2,7 +2,6 @@
 
 AGUnblock is an open-source utility under Microsoft that helps developers leverage AI agents for their Software Development Life Cycle (SDLC). This platform provides a centralized hub for discovering, configuring, and integrating various AI coding agents into your development workflow.
 
-![AGUnblock Homepage](/home/ubuntu/screenshots/localhost_5173_191329.png)
 
 ## 🤖 Featured AI Agents
 
@@ -11,7 +10,6 @@ AGUnblock currently supports the following AI agents:
 - **GitHub Copilot** - AI pair programmer that suggests code completions as you type
 - **Devin** - An autonomous AI software engineer that can plan and execute complex tasks
 - **Codex CLI** - Command-line interface for code generation using natural language
-- **Claude Code** - AI assistant specialized in understanding and generating code
 - **SREAgent** - Microsoft's AI agent for Site Reliability Engineering tasks
 
 ## ✨ Features

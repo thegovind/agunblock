@@ -17,7 +17,6 @@ For example:
 - **GitHub Copilot** - AI pair programmer for code suggestions
 - **Devin** - Autonomous AI software engineer
 - **Codex CLI** - Command-line interface for code generation
-- **Claude Code** - AI assistant for code understanding
 - **SREAgent** - AI for Site Reliability Engineering
 
 ## Get Started Today

@@ -71,24 +71,6 @@ const agents = [
     integration: 'Use with Azure OpenAI Service',
   },
   {
-    id: 'claude-code',
-    name: 'Claude Code',
-    description:
-      'An AI assistant specialized in understanding and generating code across multiple programming languages.',
-    provider: 'Anthropic',
-    type: 'cli',
-    url: 'https://github.com/anthropics/claude-code',
-    logo: 'https://anthropic.com/images/claude-logo.svg',
-    getStarted: 'Available via API integration.',
-    strengths: [
-      'Code explanation',
-      'Bug identification',
-      'Documentation generation',
-      'Refactoring assistance',
-    ],
-    integration: 'Use with Azure OpenAI Service',
-  },
-  {
     id: 'sreagent',
     name: 'SREAgent',
     description:
