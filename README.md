@@ -2,7 +2,8 @@
 
 AGUnblock is an open-source utility under Microsoft that helps developers leverage AI agents for their Software Development Life Cycle (SDLC). This platform provides a centralized hub for discovering, configuring, and integrating various AI coding agents into your development workflow.
 
-> **Note**: AGUnblock is currently under active development. Features and documentation are being added regularly. Feel free to star and watch the repository for updates!
+> [!CAUTION]
+> AGUnblock is currently under active development. Features and documentation are being added regularly. Feel free to star and watch the repository for updates!
 
 ## 🤖 Featured AI Agents
 
