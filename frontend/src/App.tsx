@@ -537,190 +537,163 @@ function RepoPage() {
             {repoData!.fullName}
           </h1>
         </div>
+        
+        {/* ---------- REPO INFO CARD IN HEADER ---------- */}
+        <div className="repo-info-card-header">
+          <div className="repo-info-content">
+            <p className="repo-description">{repoData!.description}</p>
+            
+            <div className="repo-meta-inline">
+              <div className="repo-meta-item">
+                <span className="meta-label">Language:</span> {repoData!.language}
+              </div>
+              <div className="repo-meta-item">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  style={{ marginRight: '0.25rem', verticalAlign: 'middle' }}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                  />
+                </svg>
+                {repoData!.stars} stars
+              </div>
+              <a
+                href={`https://github.com/${repoData!.fullName}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="github-link-header"
+              >
+                View on GitHub <ExternalLink style={{ width: '14px', height: '14px', marginLeft: '0.25rem' }} />
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ---------- MAIN ---------- */}
-      <div className="repo-container">
-        <div className="repo-info-card">
-          <h2 className="repo-info-title">Repository Information</h2>
-          <p className="text-text-secondary">{repoData!.description}</p>
-
-          <div className="repo-meta">
-            <div className="repo-meta-item">Language: {repoData!.language}</div>
-            <div className="repo-meta-item">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                />
-              </svg>
-              {repoData!.stars} stars
-            </div>
-          </div>
-
-          <a
-            href={`https://github.com/${repoData!.fullName}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="github-link"
-          >
-            View on GitHub <ExternalLink className="ml-1 h-3 w-3" />
-          </a>
-        </div>
-
+      <div className="repo-main-centered">
         {/* ---------- AGENT LIST FOR THIS REPO ---------- */}
         <h2 className="section-title">AI Agents for This Repository</h2>
         <p className="section-subtitle">
           Discover how to use these agents with {repoData!.fullName}
         </p>
 
-        <div className="agents-grid">
-          {agents.map((agent) => (
-            <div key={agent.id} className="agent-card" data-category={agent.category}>
-              <div className="agent-header">
-                <div className="agent-icon">
-                  {agent.category === 'code-completion' && '🐙'}
-                  {agent.category === 'async-swe' && '🤖'}
-                  {agent.category === 'cli' &&
-                    (agent.id === 'claude-code' ? '🎭' : '🔧')}
-                  {agent.category === 'devops' && '⚡'}
-                </div>
-                <div className="agent-info">
-                  <h3>{agent.name}</h3>
-                  <div className="agent-type">
-                    {agent.category === 'code-completion'
-                      ? 'Code Completion Agent'
-                      : agent.category === 'async-swe'
-                      ? 'Async SWE Agent'
-                      : agent.category === 'cli'
-                      ? 'CLI Tool'
-                      : 'DevOps Agent'}
+        {['code-completion', 'async-swe', 'cli', 'devops'].map((cat) => (
+          <div key={cat} className="agent-category-group">
+            <h3 className="agent-category-title">
+              {cat === 'code-completion'
+                ? 'Code Completion Agents'
+                : cat === 'async-swe'
+                ? 'Async SWE Agents'
+                : cat === 'cli'
+                ? 'CLI Tools'
+                : 'DevOps Agents'}
+            </h3>
+            <div className="agents-grid">
+              {agents.filter((a) => a.category === cat).map((agent) => (
+                <div key={agent.id} className="agent-card" data-category={agent.category}>
+                  <div className="agent-header">
+                    <div className="agent-icon">
+                      {agent.category === 'code-completion' && '🐙'}
+                      {agent.category === 'async-swe' && '🤖'}
+                      {agent.category === 'cli' &&
+                        (agent.id === 'claude-code' ? '🎭' : '🔧')}
+                      {agent.category === 'devops' && '⚡'}
+                    </div>
+                    <div className="agent-info">
+                      <h3>{agent.name}</h3>
+                      <div className="agent-type">
+                        {agent.category === 'code-completion'
+                          ? 'Code Completion Agent'
+                          : agent.category === 'async-swe'
+                          ? 'Async SWE Agent'
+                          : agent.category === 'cli'
+                          ? 'CLI Tool'
+                          : 'DevOps Agent'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="agent-description">{agent.description}</p>
+
+                  <ul className="agent-features">
+                    <li>How to use with {repoData!.fullName}:</li>
+                    {agent.id === 'github-copilot-agent' && (
+                      <>
+                        <li>Assign issues to Copilot Agent in your GitHub repository</li>
+                        <li>Automate feature additions, bug fixes, refactoring, and more</li>
+                      </>
+                    )}
+                    {agent.id === 'devin' && (
+                      <>
+                        <li>Access Devin through Azure marketplace</li>
+                        <li>Clone this repository using git</li>
+                        <li>Ask Devin to analyze and work with your codebase</li>
+                      </>
+                    )}
+                    {agent.id === 'codex-cli' && (
+                      <>
+                        <li>Set up Azure OpenAI Service with Codex</li>
+                        <li>Clone this repository locally</li>
+                        <li>Use the Codex CLI to generate code or assist with tasks</li>
+                      </>
+                    )}
+                    {agent.id === 'claude-code' && (
+                      <>
+                        <li>Access Claude Code through Azure OpenAI Service</li>
+                        <li>Share repository code with Claude</li>
+                        <li>
+                          Ask for code explanations or refactoring suggestions
+                        </li>
+                      </>
+                    )}
+                    {agent.id === 'sreagent' && (
+                      <>
+                        <li>Set up SREAgent in your Azure environment</li>
+                        <li>Connect your repository for monitoring</li>
+                        <li>
+                          Configure alerts and automated remediation policies
+                        </li>
+                      </>
+                    )}
+                  </ul>
+
+                  <div className="agent-actions">
+                    <a
+                      href={agent.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="agent-btn primary"
+                    >
+                      Get Started
+                    </a>
+                    <a href="#" className="agent-btn secondary">
+                      Learn More
+                    </a>
+                    <button
+                      className="agent-btn secondary"
+                      onClick={() =>
+                        analyzeRepository(agent.id, repoData!.fullName)
+                      }
+                    >
+                      Analyze Repository
+                    </button>
                   </div>
                 </div>
-              </div>
-
-              <p className="agent-description">{agent.description}</p>
-
-              <ul className="agent-features">
-                <li>How to use with {repoData!.fullName}:</li>
-                {agent.id === 'github-copilot-agent' && (
-                  <>
-                    <li>Assign issues to Copilot Agent in your GitHub repository</li>
-                    <li>Automate feature additions, bug fixes, refactoring, and more</li>
-                  </>
-                )}
-                {agent.id === 'devin' && (
-                  <>
-                    <li>Access Devin through Azure marketplace</li>
-                    <li>Clone this repository using git</li>
-                    <li>Ask Devin to analyze and work with your codebase</li>
-                  </>
-                )}
-                {agent.id === 'codex-cli' && (
-                  <>
-                    <li>Set up Azure OpenAI Service with Codex</li>
-                    <li>Clone this repository locally</li>
-                    <li>Use the Codex CLI to generate code or assist with tasks</li>
-                  </>
-                )}
-                {agent.id === 'claude-code' && (
-                  <>
-                    <li>Access Claude Code through Azure OpenAI Service</li>
-                    <li>Share repository code with Claude</li>
-                    <li>
-                      Ask for code explanations or refactoring suggestions
-                    </li>
-                  </>
-                )}
-                {agent.id === 'sreagent' && (
-                  <>
-                    <li>Set up SREAgent in your Azure environment</li>
-                    <li>Connect your repository for monitoring</li>
-                    <li>
-                      Configure alerts and automated remediation policies
-                    </li>
-                  </>
-                )}
-              </ul>
-
-              <div className="agent-actions">
-                <a
-                  href={agent.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="agent-btn primary"
-                >
-                  Get Started
-                </a>
-                <a href="#" className="agent-btn secondary">
-                  Learn More
-                </a>
-                <button
-                  className="agent-btn secondary"
-                  onClick={() =>
-                    analyzeRepository(agent.id, repoData!.fullName)
-                  }
-                >
-                  Analyze Repository
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ---------- INTEGRATION STRIP ---------- */}
-      <section className="integration" id="integration">
-        <div className="integration-content">
-          <h2 className="section-title">Microsoft Ecosystem Integration</h2>
-          <p className="section-subtitle">
-            Seamlessly integrate AI agents into your Microsoft development stack
-          </p>
-
-          <div className="integration-grid">
-            <div className="integration-item">
-              <div className="integration-icon">☁️</div>
-              <h3>Azure Integration</h3>
-              <p>
-                Deploy agents via Azure Marketplace or use Azure OpenAI for
-                custom implementations
-              </p>
-            </div>
-            <div className="integration-item">
-              <div className="integration-icon">📦</div>
-              <h3>GitHub Integration</h3>
-              <p>
-                Native support for GitHub repositories with Copilot and other
-                agents
-              </p>
-            </div>
-            <div className="integration-item">
-              <div className="integration-icon">🔄</div>
-              <h3>DevOps Pipeline</h3>
-              <p>
-                Integrate agents into your CI/CD workflows for automated
-                development
-              </p>
-            </div>
-            <div className="integration-item">
-              <div className="integration-icon">🛡️</div>
-              <h3>Enterprise Ready</h3>
-              <p>
-                Security, compliance, and governance features for enterprise
-                deployments
-              </p>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        ))}
+      </div>
 
       {/* ---------- FOOTER ---------- */}
       <footer>

@@ -469,3 +469,131 @@
     }
   }
   
+  /* ---------- REPO PAGE HEADER & INFO ---------- */
+  .repo-header {
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-light) 100%);
+    border-bottom: 1px solid var(--border);
+    padding-top: 5rem;
+    min-height: 300px;
+  }
+  .repo-header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  .back-link {
+    color: var(--azure-teal);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    display: inline-block;
+    transition: color 0.3s ease;
+  }
+  .back-link:hover {
+    color: var(--text-primary);
+  }
+  .repo-title {
+    font-size: 2.5rem;
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .repo-info-card-header {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem 2rem;
+  }
+  .repo-info-content {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+  .repo-description {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+  .repo-meta-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: center;
+  }
+  .repo-meta-item {
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .meta-label {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .github-link-header {
+    color: var(--azure-teal);
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--azure-teal);
+    background: rgba(0, 188, 242, 0.1);
+  }
+  .github-link-header:hover {
+    background: var(--azure-teal);
+    color: var(--bg-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 188, 242, 0.3);
+  }
+  
+  /* ---------- REPO PAGE CENTERING & CATEGORY GROUPS ---------- */
+  .repo-main-centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem 2rem;
+  }
+  .repo-info-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem 3rem;
+    margin-bottom: 3rem;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    text-align: center;
+  }
+  .agent-category-group {
+    width: 100%;
+    margin-bottom: 3rem;
+  }
+  .agent-category-title {
+    text-align: left;
+    font-size: 1.5rem;
+    color: var(--azure-teal);
+    margin-bottom: 1.5rem;
+    margin-left: 0.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    .repo-meta-inline {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .repo-title {
+      font-size: 1.8rem;
+    }
+  }
+  
