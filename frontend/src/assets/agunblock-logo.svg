@@ -1,28 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100" fill="none">
   <defs>
     <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#00c853" />
       <stop offset="100%" stop-color="#1e90ff" />
     </linearGradient>
   </defs>
-
-  <!-- Open padlock shackle -->
-  <path d="M100 60 V40 A20 20 0 1 0 60 40 V60" stroke="url(#grad)" stroke-width="10" stroke-linecap="round"/>
-
-  <!-- Lock body -->
-  <rect x="40" y="60" width="80" height="80" rx="10" stroke="url(#grad)" stroke-width="10"/>
-
-  <!-- Arrow indicating unblock -->
-  <line x1="70" y1="100" x2="110" y2="100" stroke="url(#grad)" stroke-width="10" stroke-linecap="round"/>
-  <polyline points="95,85 110,100 95,115" stroke="url(#grad)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-
-  <!-- Agent icon (simple bot head) -->
-  <circle cx="60" cy="100" r="10" fill="url(#grad)"/>
-  <line x1="60" y1="88" x2="60" y2="80" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
-  <circle cx="60" cy="75" r="4" fill="#ffffff"/>
-
+  <!-- Minimal open padlock -->
+  <path d="M60 40 V25 A15 15 0 1 0 30 25 V40" stroke="url(#grad)" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <rect x="30" y="40" width="60" height="40" rx="8" stroke="url(#grad)" stroke-width="6" fill="none"/>
+  <!-- Simple right arrow inside lock -->
+  <polyline points="50,60 65,60 65,55 80,65 65,75 65,70 50,70" stroke="url(#grad)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
   <!-- Wordmark -->
-  <text x="80" y="165" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="26" fill="url(#grad)">
-    agunblock
+  <text x="60" y="95" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="url(#grad)">
+    AGUnblock
   </text>
 </svg>

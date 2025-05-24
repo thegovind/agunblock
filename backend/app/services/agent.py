@@ -96,26 +96,22 @@ class AzureAgentService:
                 language = "Java/Kotlin"
                 
         analyses = {
-            'github-copilot': f"""## GitHub Copilot Analysis for {repo_name}
+            'github-copilot-completions': f"""## GitHub Copilot (Code Completions) Analysis for {repo_name}
 
-This repository is well-suited for GitHub Copilot integration. Based on the codebase structure and {language} language, here's how to set up:
+This repository is well-suited for GitHub Copilot code completions. Based on the codebase structure and {language} language, here's how to set up:
 
 ### Setup Instructions
 
-1. Install GitHub Copilot extension in VS Code or use GitHub.dev
+1. Install GitHub Copilot extension in VS Code, JetBrains, or other supported IDEs
 2. Open files from this repository and start coding
-3. GitHub Copilot will provide contextual suggestions based on your code
-
+3. GitHub Copilot will provide contextual suggestions as you type
 
 - Enable inline suggestions
 - Configure Copilot to analyze your entire workspace for better context
 - Use Copilot Chat for explaining code and generating documentation
-
-
 - This {language} codebase will benefit from Copilot's strong understanding of standard libraries and frameworks
 - Use comments to guide Copilot when working with complex or custom components
 - For large files, consider breaking them down into smaller components for better suggestions
-
 
 ```bash
 # Clone the repository
@@ -126,7 +122,26 @@ code .
 ```
 
 Enable GitHub Copilot in your editor settings and start coding with AI assistance!""",
+            'github-copilot-agent': f"""## GitHub Copilot Coding Agent Analysis for {repo_name}
 
+This repository can benefit from GitHub Copilot Coding Agent for asynchronous, issue-driven automation. Here's how to set up:
+
+### Setup Instructions
+
+1. Assign GitHub Issues to Copilot Agent in your repository
+2. The agent will autonomously create pull requests, run CI/CD, and iterate on feedback
+3. Review and merge the agent's pull requests as needed
+
+- Automate feature additions, bug fixes, refactoring, and more
+- Leverage GitHub's security and review workflows
+- Monitor the agent's progress in draft pull requests
+
+```bash
+# Example: Assign an issue to Copilot Agent
+# On GitHub, assign the issue to @github-copilot-agent
+```
+
+Copilot Coding Agent works best with clear, well-scoped issues and access to your repository's context.""",
             'devin': f"""## Devin Configuration for {repo_name}
 
 This {language} repository can be effectively worked on using Devin. Here's the setup:
@@ -138,18 +153,14 @@ This {language} repository can be effectively worked on using Devin. Here's the 
 3. Ask Devin to analyze the repository structure
 4. Specify tasks you want Devin to help with
 
-
 - Provide Devin with full repository access for context
 - Use natural language to describe your development goals
 - Allow Devin to suggest architectural improvements
-
-
 - For this {language} codebase, Devin can help with:
   - Code refactoring and optimization
   - Implementing new features
   - Debugging complex issues
   - Writing comprehensive tests
-
 
 ```
 "Devin, analyze this {language} repository and suggest performance improvements"
@@ -158,19 +169,17 @@ This {language} repository can be effectively worked on using Devin. Here's the 
 ```
 
 Devin works best with this repository by understanding the full context of files and dependencies.""",
-
             'codex-cli': f"""## Codex CLI Setup for {repo_name}
 
 This guide will help you set up Codex CLI to work with this {language} repository.
 
 ### Setup Instructions
 
-1. Set up Azure OpenAI Service with Codex model
+1. Set up Azure OpenAI Service with Codex model or use OpenAI endpoint
 2. Install the Codex CLI tool
 3. Configure your API key
 4. Clone the repository
 5. Use the following commands to analyze code
-
 
 ```bash
 pip install codex-cli
@@ -182,7 +191,6 @@ git clone https://github.com/{repo_name}.git
 cd {repo_name.split('/')[1]}
 ```
 
-
 ```bash
 # Analyze a specific file
 codex explain -f [filename]
@@ -192,14 +200,12 @@ codex generate -p "Create a function that..."
 codex optimize -f [filename]
 ```
 
-
 - Use Codex CLI to generate boilerplate code
 - Ask for explanations of complex functions
 - Generate unit tests for critical components
 - Use for documentation generation
 
 This repository's structure is compatible with Codex CLI's code generation capabilities.""",
-
             'sreagent': f"""## SREAgent Configuration for {repo_name}
 
 This guide will help you set up SREAgent for this {language} repository.
@@ -210,7 +216,6 @@ This guide will help you set up SREAgent for this {language} repository.
 2. Connect this repository using the SREAgent GitHub integration
 3. Configure monitoring settings in the Azure portal
 4. Set up alert policies based on repository activity
-
 
 ```bash
 pip install sreagent-cli
@@ -223,14 +228,12 @@ sreagent connect --repo {repo_name}
 sreagent monitor --setup
 ```
 
-
 - Deployment frequency
 - Error rates
 - Performance metrics
 - Infrastructure usage
 - API response times
 - Resource utilization
-
 
 Based on this {language} repository, we recommend setting up alerts for:
 - Failed deployments
@@ -240,24 +243,30 @@ Based on this {language} repository, we recommend setting up alerts for:
 
 SREAgent can help maintain reliability for services deployed from this repository."""
         }
-        
-        return analyses.get(agent_id, f"No specific analysis available for {agent_id} and {repo_name}. Please try another agent.")
+        # Support legacy IDs for backward compatibility
+        legacy_map = {
+            'github-copilot': 'github-copilot-completions',
+        }
+        lookup_id = legacy_map.get(agent_id, agent_id)
+        return analyses.get(lookup_id, f"No specific analysis available for {agent_id} and {repo_name}. Please try another agent.")
 
-    
     def _get_agent_instructions(self, agent_id: str):
-        """Get the appropriate instructions for each agent type."""
         base_instructions = (
             "You are an AI assistant that analyzes GitHub repositories and provides detailed setup "
             "instructions for different AI agents. Your job is to analyze the repository README and "
             "dependency files to understand the project structure and requirements."
         )
-        
         agent_specific_instructions = {
-            "github-copilot": (
-                "Focus on how to set up GitHub Copilot for this repository. Explain how to "
-                "install GitHub Copilot in VS Code or other supported environments, how to "
+            "github-copilot-completions": (
+                "Focus on how to set up GitHub Copilot (Code Completions) for this repository. Explain how to "
+                "install GitHub Copilot in VS Code, JetBrains, or other supported IDEs, how to "
                 "configure it for this specific project, and provide tips for getting the best "
                 "code suggestions based on this repository's structure and languages."
+            ),
+            "github-copilot-agent": (
+                "Focus on how to set up GitHub Copilot Coding Agent for this repository. Explain how to "
+                "assign issues to the agent, how it creates pull requests and runs CI/CD, and provide tips for "
+                "effective use based on this repository's structure and requirements."
             ),
             "devin": (
                 "Focus on how to set up Devin for this repository. Explain how to access Devin "
@@ -267,13 +276,8 @@ SREAgent can help maintain reliability for services deployed from this repositor
             ),
             "codex-cli": (
                 "Focus on how to set up Codex CLI for this repository. Explain how to install "
-                "and configure Codex CLI with Azure OpenAI, how to use it effectively with this "
+                "and configure Codex CLI with Azure OpenAI or OpenAI, how to use it effectively with this "
                 "repository, and provide example commands tailored to this repository's structure."
-            ),
-            "claude-code": (
-                "Focus on how to set up Claude Code for this repository. Explain how to access "
-                "Claude Code through Azure OpenAI Service, how to use it with this repository, "
-                "and provide example prompts or queries tailored to this repository's structure."
             ),
             "sreagent": (
                 "Focus on how to set up SREAgent for this repository. Explain how to configure "
@@ -282,8 +286,11 @@ SREAgent can help maintain reliability for services deployed from this repositor
                 "structure and purpose."
             )
         }
-        
-        if agent_id in agent_specific_instructions:
-            return base_instructions + "\n\n" + agent_specific_instructions[agent_id]
-        
+        # Support legacy IDs for backward compatibility
+        legacy_map = {
+            'github-copilot': 'github-copilot-completions',
+        }
+        lookup_id = legacy_map.get(agent_id, agent_id)
+        if lookup_id in agent_specific_instructions:
+            return base_instructions + "\n\n" + agent_specific_instructions[lookup_id]
         return base_instructions
