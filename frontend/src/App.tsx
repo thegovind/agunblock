@@ -8,7 +8,7 @@ import {
   useNavigate,
 } from 'react-router-dom';
 import { Github, ExternalLink } from 'lucide-react';
-import AgUnblockLogo from './assets/agunblock-logo.svg';
+import logo from './assets/logo.png';
 import './App.css';
 import Modal from './components/ui/Modal';
 
@@ -17,76 +17,94 @@ import Modal from './components/ui/Modal';
 /* ------------------------------------------------------------------------- */
 const agents = [
   {
-    id: 'github-copilot',
+    id: 'github-copilot-completions',
+    name: 'GitHub Copilot (Code Completions)',
+    description:
+      'AI pair programmer that suggests code completions as you type in your IDE. Available for VS Code, JetBrains, and more.',
+    provider: 'GitHub (Microsoft)',
+    category: 'code-completion',
+    url: 'https://github.com/features/copilot',
+    logo: 'https://github.githubassets.com/images/modules/site/copilot/copilot-logo.png',
+    getStarted: 'Enable in your IDE via the GitHub Copilot extension.',
+    strengths: [
+      'Real-time code suggestions',
+      'Context-aware completions',
+      'Supports multiple languages',
+      'IDE integration',
+    ],
+    integration: 'IDE plugin',
+  },
+  {
+    id: 'github-copilot-agent',
     name: 'GitHub Copilot Coding Agent',
     description:
-      'An AI-powered coding assistant that helps developers write better code faster.',
+      'Asynchronous agent that autonomously completes GitHub Issues by creating pull requests, running CI/CD, and iterating on feedback. Assign issues to the agent to automate feature additions, bug fixes, refactoring, and more.',
     provider: 'GitHub (Microsoft)',
-    type: 'coding',
+    category: 'async-swe',
     url: 'https://github.blog/news-insights/product-news/github-copilot-meet-the-new-coding-agent/',
     logo: 'https://github.githubassets.com/images/modules/site/copilot/copilot-logo.png',
-    getStarted: 'Available directly in GitHub. Enable through GitHub settings.',
+    getStarted: 'Assign issues to Copilot Agent in your GitHub repository.',
     strengths: [
-      'Code completion',
-      'Natural language to code',
-      'Context-aware suggestions',
-      'Multi-file understanding',
+      'Automated PRs',
+      'CI/CD integration',
+      'Issue-driven automation',
+      'Iterative code improvement',
     ],
-    integration: 'Built directly into GitHub',
+    integration: 'GitHub Issues & PRs',
   },
   {
     id: 'devin',
-    name: 'Cognition Devin',
+    name: 'Devin',
     description:
-      'An autonomous AI software engineer that can understand, plan, and execute complex software development tasks.',
-    provider: 'Cognition (Available via Azure)',
-    type: 'autonomous',
-    url: 'https://cognition.ai/blog/devin-2',
+      'An autonomous AI software engineer, available via Azure Marketplace, that can plan and execute complex tasks across the SDLC.',
+    provider: 'Microsoft',
+    category: 'async-swe',
+    url: 'https://aka.ms/devin',
     logo: 'https://cognition.ai/images/devin-logo.svg',
-    getStarted: 'Available via Azure marketplace.',
+    getStarted: 'Available via Azure Marketplace.',
     strengths: [
       'End-to-end development',
       'Autonomous problem solving',
       'Complex reasoning',
       'Multi-step planning',
     ],
-    integration: 'Available through Azure marketplace',
+    integration: 'Azure Marketplace',
   },
   {
     id: 'codex-cli',
     name: 'Codex CLI',
     description:
-      'A command-line interface powered by OpenAI Codex for code generation and assistance.',
+      'Command-line interface for code generation using natural language, compatible with both OpenAI and Azure OpenAI endpoints.',
     provider: 'OpenAI',
-    type: 'cli',
-    url: 'https://github.com/openai/codex',
+    category: 'cli',
+    url: 'https://github.com/openai/codex?tab=readme-ov-file#environment-variables-setup',
     logo: 'https://openai.com/content/images/2021/08/codex-1.jpg',
-    getStarted: 'Available via Azure OpenAI Service.',
+    getStarted: 'Install via pip and configure with your OpenAI or Azure OpenAI API key.',
     strengths: [
       'Command-line integration',
       'Code generation from comments',
       'API understanding',
       'Language translation',
     ],
-    integration: 'Use with Azure OpenAI Service',
+    integration: 'OpenAI & Azure OpenAI',
   },
   {
     id: 'sreagent',
     name: 'SREAgent',
     description:
-      'An AI agent specialized in Site Reliability Engineering tasks, helping maintain system reliability and performance.',
+      'Microsoft\'s AI agent for Site Reliability Engineering tasks, integrated with Azure App Service. Helps maintain system reliability and performance.',
     provider: 'Microsoft',
-    type: 'sre',
-    url: 'https://azure.microsoft.com/services/sreagent',
+    category: 'devops',
+    url: 'https://learn.microsoft.com/en-us/azure/app-service/sre-agent-overview',
     logo: 'https://azure.microsoft.com/images/product-logos/sreagent.svg',
-    getStarted: 'Available directly in Azure.',
+    getStarted: 'Available directly in Azure App Service.',
     strengths: [
       'Incident response',
       'Performance optimization',
       'System monitoring',
       'Automated remediation',
     ],
-    integration: 'Built into Azure services',
+    integration: 'Azure App Service',
   },
 ];
 
@@ -126,9 +144,9 @@ function HomePage() {
   };
 
   const [activeCategory, setActiveCategory] =
-    useState<'all' | 'coding' | 'autonomous' | 'sre' | 'cli'>('all');
+    useState<'all' | 'code-completion' | 'async-swe' | 'cli' | 'devops'>('all');
   const filteredAgents = agents.filter(
-    (a) => activeCategory === 'all' || a.type === activeCategory
+    (a) => activeCategory === 'all' || a.category === activeCategory
   );
 
   /* smooth-scroll + nav shadow */
@@ -172,7 +190,7 @@ function HomePage() {
       <nav>
         <div className="nav-container">
           <Link to="/" className="logo" aria-label="AGUnblock home">
-            <AgUnblockLogo className="logo-svg" />
+            <img src={logo} alt="AGUnblock logo" className="logo-img" />
           </Link>
 
           <div className="nav-links">
@@ -193,11 +211,9 @@ function HomePage() {
       {/* ---------- HERO ---------- */}
       <section className="hero">
         <div className="hero-content">
-          <h1>Unlock AI Agents for Your Development Workflow</h1>
+          <h1>Unlock SDLC Agents to turbocharge Your Development Workflow</h1>
           <p className="hero-subtitle">
-            Discover and integrate powerful AI coding agents into your SDLC.
-            From GitHub Copilot to Devin, find the perfect AI assistant for your
-            project.
+            Configure your repo to be leveraged by different AI agents - so your SDLC lifecycle can be automated and you can focus on user needs.
           </p>
 
           <div className="repo-input-container">
@@ -216,7 +232,13 @@ function HomePage() {
 
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             Try:&nbsp;
-            <code style={{ color: 'var(--azure-teal)' }}>microsoft/vscode</code>{' '}
+            <a
+              href="#"
+              style={{ color: 'var(--azure-teal)', textDecoration: 'none', cursor: 'pointer' }}
+              onClick={e => { e.preventDefault(); setRepoInput('Azure-Samples/snippy'); }}
+            >
+              Azure-Samples/snippy
+            </a>{' '}
             or paste any GitHub URL
           </p>
         </div>
@@ -230,7 +252,7 @@ function HomePage() {
         </p>
 
         <div className="category-tabs">
-          {(['all', 'coding', 'autonomous', 'sre', 'cli'] as const).map(
+          {(['all', 'code-completion', 'async-swe', 'cli', 'devops'] as const).map(
             (cat) => (
               <div
                 key={cat}
@@ -241,13 +263,13 @@ function HomePage() {
               >
                 {cat === 'all'
                   ? 'All Agents'
-                  : cat === 'coding'
-                  ? 'Coding Agents'
-                  : cat === 'autonomous'
-                  ? 'Autonomous Agents'
-                  : cat === 'sre'
-                  ? 'SRE & DevOps'
-                  : 'CLI Based Agents'}
+                  : cat === 'code-completion'
+                  ? 'Code Completion Agent'
+                  : cat === 'async-swe'
+                  ? 'Async SWE Agent'
+                  : cat === 'cli'
+                  ? 'CLI-based Sync Agent'
+                  : 'DevOps Agent'}
               </div>
             )
           )}
@@ -255,25 +277,25 @@ function HomePage() {
 
         <div className="agents-grid">
           {filteredAgents.map((agent) => (
-            <div key={agent.id} className="agent-card" data-category={agent.type}>
+            <div key={agent.id} className="agent-card" data-category={agent.category}>
               <div className="agent-header">
                 <div className="agent-icon">
-                  {agent.type === 'coding' && '🐙'}
-                  {agent.type === 'autonomous' && '🤖'}
-                  {agent.type === 'cli' &&
+                  {agent.category === 'code-completion' && '🐙'}
+                  {agent.category === 'async-swe' && '🤖'}
+                  {agent.category === 'cli' &&
                     (agent.id === 'claude-code' ? '🎭' : '🔧')}
-                  {agent.type === 'sre' && '⚡'}
+                  {agent.category === 'devops' && '⚡'}
                 </div>
                 <div className="agent-info">
                   <h3>{agent.name}</h3>
                   <div className="agent-type">
-                    {agent.type === 'coding'
-                      ? 'Coding Assistant'
-                      : agent.type === 'autonomous'
-                      ? 'Autonomous Agent'
-                      : agent.type === 'cli'
+                    {agent.category === 'code-completion'
+                      ? 'Code Completion Agent'
+                      : agent.category === 'async-swe'
+                      ? 'Async SWE Agent'
+                      : agent.category === 'cli'
                       ? 'CLI Tool'
-                      : 'SRE & DevOps'}
+                      : 'DevOps Agent'}
                   </div>
                 </div>
               </div>
@@ -447,7 +469,7 @@ function RepoPage() {
     <nav>
       <div className="nav-container">
         <Link to="/" className="logo" aria-label="AGUnblock home">
-          <AgUnblockLogo className="logo-svg" />
+          <img src={logo} alt="AGUnblock logo" className="logo-img" />
         </Link>
 
         <div className="nav-links">
@@ -562,25 +584,25 @@ function RepoPage() {
 
         <div className="agents-grid">
           {agents.map((agent) => (
-            <div key={agent.id} className="agent-card" data-category={agent.type}>
+            <div key={agent.id} className="agent-card" data-category={agent.category}>
               <div className="agent-header">
                 <div className="agent-icon">
-                  {agent.type === 'coding' && '🐙'}
-                  {agent.type === 'autonomous' && '🤖'}
-                  {agent.type === 'cli' &&
+                  {agent.category === 'code-completion' && '🐙'}
+                  {agent.category === 'async-swe' && '🤖'}
+                  {agent.category === 'cli' &&
                     (agent.id === 'claude-code' ? '🎭' : '🔧')}
-                  {agent.type === 'sre' && '⚡'}
+                  {agent.category === 'devops' && '⚡'}
                 </div>
                 <div className="agent-info">
                   <h3>{agent.name}</h3>
                   <div className="agent-type">
-                    {agent.type === 'coding'
-                      ? 'Coding Assistant'
-                      : agent.type === 'autonomous'
-                      ? 'Autonomous Agent'
-                      : agent.type === 'cli'
+                    {agent.category === 'code-completion'
+                      ? 'Code Completion Agent'
+                      : agent.category === 'async-swe'
+                      ? 'Async SWE Agent'
+                      : agent.category === 'cli'
                       ? 'CLI Tool'
-                      : 'SRE & DevOps'}
+                      : 'DevOps Agent'}
                   </div>
                 </div>
               </div>
@@ -589,11 +611,10 @@ function RepoPage() {
 
               <ul className="agent-features">
                 <li>How to use with {repoData!.fullName}:</li>
-                {agent.id === 'github-copilot' && (
+                {agent.id === 'github-copilot-agent' && (
                   <>
-                    <li>Open this repository in GitHub or VS Code</li>
-                    <li>Enable GitHub Copilot in your editor</li>
-                    <li>Start coding and receive AI-powered suggestions</li>
+                    <li>Assign issues to Copilot Agent in your GitHub repository</li>
+                    <li>Automate feature additions, bug fixes, refactoring, and more</li>
                   </>
                 )}
                 {agent.id === 'devin' && (
