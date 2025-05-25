@@ -74,7 +74,7 @@ resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
 }
 
 // -------- Container Apps Environment --------------------------------------
-resource env 'Microsoft.App/managedEnvironments@2023-05-01' = {
+resource env 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
   name: '${namePrefix}-env'
   location: location
   properties: {}
@@ -86,6 +86,9 @@ resource api 'Microsoft.App/containerApps@2025-02-02-preview' = {
   location: location
   tags: {
     'azd-service-name': 'api'
+  }
+  identity: {
+    type: 'SystemAssigned'
   }
   properties: {
     managedEnvironmentId: env.id

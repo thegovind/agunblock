@@ -15,7 +15,7 @@ AGUnblock is an open-source utility that helps developers leverage AI agents for
 
 AGUnblock currently supports the following AI agents:
 
-- [**GitHub Copilot (Code Completions)**](https://github.com/features/copilot) - AI pair programmer that suggests code completions as you type in your IDE
+- [**GitHub Copilot (Code Completions)**](https://github.com/features/copilot) - AI pair programmer that provides code suggestions directly in your editor as you type, with features like Next Edit Suggestions, Agent Mode for autonomous multi-file editing, and comment-to-code generation
 - [**GitHub Copilot Coding Agent**](https://github.blog/news-insights/product-news/github-copilot-meet-the-new-coding-agent/) - Asynchronous agent that autonomously completes GitHub Issues by creating pull requests, running CI/CD, and iterating on feedback. Assign issues to the agent to automate feature additions, bug fixes, refactoring, and more.
 - [**Devin**](https://aka.ms/devin) - An autonomous AI software engineer, available Azure marketplace, that can plan and execute complex tasks.
 - [**Codex CLI**](https://github.com/openai/codex?tab=readme-ov-file#environment-variables-setup) - Command-line interface for code generation using natural language, compatible with both OpenAI and Azure OpenAI endpoints.

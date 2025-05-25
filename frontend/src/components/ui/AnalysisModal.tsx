@@ -1,31 +1,32 @@
-import React, { useEffect, useState } from 'react';
-import { CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle, AlertCircle, Loader2, Clock } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useStreamingAnalysis } from '../../hooks/useStreamingAnalysis';
 import MarkdownRenderer from './MarkdownRenderer';
 
-interface AnalysisProgressUpdate {
-  step: number;
-  step_name: string;
-  status: 'starting' | 'in_progress' | 'completed' | 'failed';
-  message: string;
-  progress_percentage: number;
-  elapsed_time?: number;
-  details?: Record<string, any>;
-}
+// Note: These interfaces are defined in the hook, keeping here for reference
+// interface AnalysisProgressUpdate {
+//   step: number;
+//   step_name: string;
+//   status: 'starting' | 'in_progress' | 'completed' | 'failed';
+//   message: string;
+//   progress_percentage: number;
+//   elapsed_time?: number;
+//   details?: Record<string, any>;
+// }
 
-interface AnalysisResults {
-  agentId: string;
-  repoName: string;
-  analysis: string;
-  setupCommands?: {
-    prerequisites: string;
-    dependencies: string;
-    run_app: string;
-    linting: string;
-    testing: string;
-  };
-}
+// interface AnalysisResults {
+//   agentId: string;
+//   repoName: string;
+//   analysis: string;
+//   setupCommands?: {
+//     prerequisites: string;
+//     dependencies: string;
+//     run_app: string;
+//     linting: string;
+//     testing: string;
+//   };
+// }
 
 interface AnalysisModalProps {
   isOpen: boolean;
@@ -50,7 +51,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
     results,
     error,
     startAnalysis,
-    reset
+    // reset - currently unused
   } = useStreamingAnalysis();
   
   const [startTime, setStartTime] = useState<Date | null>(null);
