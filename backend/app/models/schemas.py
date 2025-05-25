@@ -11,3 +11,11 @@ class RepositoryAnalysisResponse(BaseModel):
     repo_name: str
     analysis: str
     error: Optional[str] = None
+
+class RepositoryInfoResponse(BaseModel):
+    full_name: str
+    description: str
+    language: str
+    stars: int
+    default_branch: str
+    readme: Optional[str] = None
