@@ -1,15 +1,32 @@
 import asyncio
 import time
+from typing import Dict, List, Optional, Any, Union
+
 from azure.ai.agents.aio import AgentsClient
 from azure.core.credentials import AzureKeyCredential
+
 from ..config import AZURE_AI_PROJECT_CONNECTION_STRING, AZURE_AI_AGENTS_API_KEY
+from ..constants import (
+    AGENT_ID_GITHUB_COPILOT_COMPLETIONS,
+    AGENT_ID_GITHUB_COPILOT_AGENT,
+    AGENT_ID_DEVIN,
+    AGENT_ID_CODEX_CLI,
+    AGENT_ID_SREAGENT,
+    LEGACY_AGENT_ID_MAP,
+    DEPENDENCY_FILES,
+    LANGUAGE_MAP,
+)
+
 
 class AzureAgentService:
-    def __init__(self):
+    """Service for interacting with Azure AI Agents."""
+    
+    def __init__(self) -> None:
+        """Initialize the Azure Agent Service with credentials."""
         self.endpoint = AZURE_AI_PROJECT_CONNECTION_STRING
         self.credential = None if not AZURE_AI_AGENTS_API_KEY or AZURE_AI_AGENTS_API_KEY == "your_api_key" else AzureKeyCredential(AZURE_AI_AGENTS_API_KEY)
         
-    async def analyze_repository(self, agent_id: str, repo_name: str, readme_content: str, dependencies: dict):
+    async def analyze_repository(self, agent_id: str, repo_name: str, readme_content: str, dependencies: Dict[str, str]) -> str:
         """
         Analyze a repository using Azure AI Agents.
         
@@ -82,21 +99,28 @@ class AzureAgentService:
         except Exception as e:
             return f"Error connecting to Azure AI Agents: {str(e)}\n\nUsing mock data instead:\n\n{self._generate_mock_analysis(agent_id, repo_name, readme_content, dependencies)}"
     
-    def _generate_mock_analysis(self, agent_id: str, repo_name: str, readme_content: str, dependencies: dict):
-        """Generate mock analysis data for testing purposes."""
+    def _generate_mock_analysis(self, agent_id: str, repo_name: str, readme_content: str, dependencies: Dict[str, str]) -> str:
+        """
+        Generate mock analysis data for testing purposes.
+        
+        Args:
+            agent_id: The type of AI agent
+            repo_name: The repository name in owner/repo format
+            readme_content: The README content of the repository
+            dependencies: Dictionary of dependency files and their contents
+            
+        Returns:
+            Mock analysis as a string
+        """
         language = "JavaScript"
         if dependencies:
-            if "requirements.txt" in dependencies:
-                language = "Python"
-            elif "package.json" in dependencies:
-                language = "JavaScript/TypeScript"
-            elif "pom.xml" in dependencies:
-                language = "Java"
-            elif "build.gradle" in dependencies:
-                language = "Java/Kotlin"
+            for dep_file, lang in LANGUAGE_MAP.items():
+                if dep_file in dependencies:
+                    language = lang
+                    break
                 
         analyses = {
-            'github-copilot-completions': f"""## GitHub Copilot (Code Completions) Analysis for {repo_name}
+            AGENT_ID_GITHUB_COPILOT_COMPLETIONS: f"""## GitHub Copilot (Code Completions) Analysis for {repo_name}
 
 This repository is well-suited for GitHub Copilot code completions. Based on the codebase structure and {language} language, here's how to set up:
 
@@ -122,7 +146,7 @@ code .
 ```
 
 Enable GitHub Copilot in your editor settings and start coding with AI assistance!""",
-            'github-copilot-agent': f"""## GitHub Copilot Coding Agent Analysis for {repo_name}
+            AGENT_ID_GITHUB_COPILOT_AGENT: f"""## GitHub Copilot Coding Agent Analysis for {repo_name}
 
 This repository can benefit from GitHub Copilot Coding Agent for asynchronous, issue-driven automation. Here's how to set up:
 
@@ -142,7 +166,7 @@ This repository can benefit from GitHub Copilot Coding Agent for asynchronous, i
 ```
 
 Copilot Coding Agent works best with clear, well-scoped issues and access to your repository's context.""",
-            'devin': f"""## Devin Configuration for {repo_name}
+            AGENT_ID_DEVIN: f"""## Devin Configuration for {repo_name}
 
 This {language} repository can be effectively worked on using Devin. Here's the setup:
 
@@ -169,7 +193,7 @@ This {language} repository can be effectively worked on using Devin. Here's the 
 ```
 
 Devin works best with this repository by understanding the full context of files and dependencies.""",
-            'codex-cli': f"""## Codex CLI Setup for {repo_name}
+            AGENT_ID_CODEX_CLI: f"""## Codex CLI Setup for {repo_name}
 
 This guide will help you set up Codex CLI to work with this {language} repository.
 
@@ -206,7 +230,7 @@ codex optimize -f [filename]
 - Use for documentation generation
 
 This repository's structure is compatible with Codex CLI's code generation capabilities.""",
-            'sreagent': f"""## SREAgent Configuration for {repo_name}
+            AGENT_ID_SREAGENT: f"""## SREAgent Configuration for {repo_name}
 
 This guide will help you set up SREAgent for this {language} repository.
 
@@ -243,54 +267,59 @@ Based on this {language} repository, we recommend setting up alerts for:
 
 SREAgent can help maintain reliability for services deployed from this repository."""
         }
+        
         # Support legacy IDs for backward compatibility
-        legacy_map = {
-            'github-copilot': 'github-copilot-completions',
-        }
-        lookup_id = legacy_map.get(agent_id, agent_id)
+        lookup_id = LEGACY_AGENT_ID_MAP.get(agent_id, agent_id)
         return analyses.get(lookup_id, f"No specific analysis available for {agent_id} and {repo_name}. Please try another agent.")
 
-    def _get_agent_instructions(self, agent_id: str):
+    def _get_agent_instructions(self, agent_id: str) -> str:
+        """
+        Get agent-specific instructions for analysis.
+        
+        Args:
+            agent_id: The type of AI agent
+            
+        Returns:
+            Instructions string for the agent
+        """
         base_instructions = (
             "You are an AI assistant that analyzes GitHub repositories and provides detailed setup "
             "instructions for different AI agents. Your job is to analyze the repository README and "
             "dependency files to understand the project structure and requirements."
         )
         agent_specific_instructions = {
-            "github-copilot-completions": (
+            AGENT_ID_GITHUB_COPILOT_COMPLETIONS: (
                 "Focus on how to set up GitHub Copilot (Code Completions) for this repository. Explain how to "
                 "install GitHub Copilot in VS Code, JetBrains, or other supported IDEs, how to "
                 "configure it for this specific project, and provide tips for getting the best "
                 "code suggestions based on this repository's structure and languages."
             ),
-            "github-copilot-agent": (
+            AGENT_ID_GITHUB_COPILOT_AGENT: (
                 "Focus on how to set up GitHub Copilot Coding Agent for this repository. Explain how to "
                 "assign issues to the agent, how it creates pull requests and runs CI/CD, and provide tips for "
                 "effective use based on this repository's structure and requirements."
             ),
-            "devin": (
+            AGENT_ID_DEVIN: (
                 "Focus on how to set up Devin for this repository. Explain how to access Devin "
                 "through Azure Marketplace, how to clone and configure this repository for Devin, "
                 "and provide tips for effective collaboration with Devin based on this repository's "
                 "structure and requirements."
             ),
-            "codex-cli": (
+            AGENT_ID_CODEX_CLI: (
                 "Focus on how to set up Codex CLI for this repository. Explain how to install "
                 "and configure Codex CLI with Azure OpenAI or OpenAI, how to use it effectively with this "
                 "repository, and provide example commands tailored to this repository's structure."
             ),
-            "sreagent": (
+            AGENT_ID_SREAGENT: (
                 "Focus on how to set up SREAgent for this repository. Explain how to configure "
                 "SREAgent in an Azure environment, how to connect it with this repository, "
                 "and recommend monitoring metrics and alert policies based on this repository's "
                 "structure and purpose."
             )
         }
+        
         # Support legacy IDs for backward compatibility
-        legacy_map = {
-            'github-copilot': 'github-copilot-completions',
-        }
-        lookup_id = legacy_map.get(agent_id, agent_id)
+        lookup_id = LEGACY_AGENT_ID_MAP.get(agent_id, agent_id)
         if lookup_id in agent_specific_instructions:
             return base_instructions + "\n\n" + agent_specific_instructions[lookup_id]
         return base_instructions
