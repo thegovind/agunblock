@@ -80,7 +80,7 @@ const githubCopilotCompletions: Agent = {
     'Catching typos and fixing simple coding mistakes',
     'Automated testing and build task execution',
     'Complex codebase modifications with natural language',
-    'Generating tests and documentation'
+    'Cross-repo coordination (limited context)',
   ],
   bestFor: [
     'Individual developers and teams',

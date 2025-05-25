@@ -2,25 +2,30 @@ import { Agent } from '../../types/agent';
 
 const devin: Agent = {
   id: 'devin',
-  name: 'Devin',
+  name: 'Cognition Devin',
   description:
-    'An autonomous AI software engineer, available via Azure Marketplace, that can plan and execute complex tasks across the SDLC.',
+    'Your collaborative AI teammate that can write, run and test code. Devin excels at handling small tasks in parallel, code migrations, PR reviews, and building integrations before they hit your backlog.',
   provider: 'Microsoft',
   category: 'async-swe',
   url: 'https://aka.ms/devin',
   logo: 'https://cognition.ai/images/devin-logo.svg',
-  getStarted: 'Available via Azure Marketplace.',
+  getStarted: 'Available via Azure Marketplace deployment.',
   strengths: [
-    'End-to-end development',
-    'Autonomous problem solving',
-    'Complex reasoning',
-    'Multi-step planning',
+    'Tackles many small tasks in parallel before they hit your backlog',
+    'Code migrations and framework upgrades (JS to TS, Angular 16→18)',
+    'PR reviews, unit tests, and reproducing bugs',
+    'Building integrations with unfamiliar APIs and internal tools',
+    'Embedded VS Code IDE with real-time collaboration',
+    'Conversational interface with browser automation',
+    'GitHub, Slack, and Jira integrations',
+    'DeepWiki codebase analysis and documentation',
+    'Continuous learning from codebase patterns',
   ],
   integration: 'Azure Marketplace',
   prerequisites: [
     'Azure subscription with appropriate permissions',
     'GitHub repository with appropriate permissions',
-    'Basic understanding of Azure services'
+    'Understanding that Devin works best on junior engineer level tasks'
   ],
   setupSteps: [
     {
@@ -34,7 +39,7 @@ const devin: Agent = {
       title: 'Configure GitHub Integration',
       description: 'Connect your GitHub account to Devin to enable repository access and code changes.',
       links: [
-        { text: 'Devin GitHub Integration Guide', url: 'https://docs.devin.ai/integrations/gh' },
+        { text: 'Devin GitHub Integration Guide', url: 'https://docs.devin.ai/integrations/github-integration-guide' },
         { text: 'GitHub Settings', url: 'https://github.com/settings/applications' }
       ]
     },
@@ -54,19 +59,34 @@ const devin: Agent = {
     {
       title: 'Configure Devin\'s Machine',
       description: 'Complete the setup process by configuring Devin\'s Machine for your project. This will enable Devin to work effectively with your codebase.'
+    },
+    {
+      title: 'Connect Integrations',
+      description: 'Connect Devin with GitHub, Slack, Azure DevOps, and enable DeepWiki for enhanced codebase analysis and DeepSearch for semantic code search.',
+      links: [
+        { text: 'DeepWiki Integration', url: 'https://deepwiki.com' },
+        { text: 'Slack Integration Guide', url: 'https://docs.devin.ai/integrations/slack' }
+      ]
     }
   ],
   useCases: [
-    'Complex feature development',
-    'Debugging difficult issues',
-    'System architecture design',
-    'End-to-end project implementation'
+    'Targeted refactors and small feature requests',
+    'Improving test coverage and writing unit tests',
+    'Investigating and fixing CI failures',
+    'Language migrations (JavaScript to TypeScript)',
+    'Framework upgrades (Angular 16 → 18)',
+    'PR reviews and codebase Q&A with DeepWiki',
+    'Building integrations with unfamiliar APIs',
+    'Creating prototypes and internal tools',
+    'Cross-repo dependency management',
+    'Multi-repository refactoring projects',
   ],
   bestFor: [
-    'Complex problem solving',
-    'Projects requiring deep reasoning',
-    'Multi-step development tasks',
-    'Teams needing autonomous development'
+    'Junior engineer level complexity tasks',
+    'Tasks that are quick to verify (CI passes, deployments)',
+    'Smaller, clearly scoped development tasks',
+    'Teams wanting to prevent small tasks from hitting their backlog',
+    'Collaborative development with embedded IDE takeover'
   ]
 };
 

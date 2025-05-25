@@ -845,15 +845,21 @@ GitHub Copilot supports this repository's programming languages and can provide:
                 "or 'Replace current auth with OAuth' that span multiple files."
             ),
             AGENT_ID_GITHUB_COPILOT_AGENT: (
-                "Focus on how to set up GitHub Copilot Coding Agent for this repository. Explain how to "
-                "assign issues to the agent, how it creates pull requests and runs CI/CD, and provide tips for "
-                "effective use based on this repository's structure and requirements."
+                "Focus on how to set up GitHub Copilot Coding Agent for this repository. Explain how to enable "
+                "the agent in organization and repository settings, create well-scoped issues with clear acceptance "
+                "criteria, and assign issues to Copilot. Describe how it uses GitHub Actions compute environment "
+                "to autonomously fix bugs, implement features, improve test coverage, and update documentation. "
+                "Mention the secure workflow with branch protections, session logs for progress tracking, and "
+                "iteration via PR review comments. Include guidance on .github/copilot-instructions.md for "
+                "custom repository guidelines and best practices for low-to-medium complexity tasks."
             ),
             AGENT_ID_DEVIN: (
-                "Focus on how to set up Devin for this repository. Devin is SWE Agent from Cognition Explain how to access Devin "
-                "through Azure Marketplace at https://aka.ms/devin, how to clone and configure this repository for Devin, "
-                "and provide tips for effective collaboration with Devin based on this repository's "
-                "structure and requirements."
+                "Focus on how to set up Devin for this repository. Devin is your collaborative AI teammate from Cognition "
+                "that can write, run and test code. Explain how to access Devin through Azure Marketplace at "
+                "https://aka.ms/devin, how to connect GitHub and Slack integrations, and provide tips for effective "
+                "collaboration with Devin based on this repository's structure. Emphasize that Devin works best on "
+                "junior engineer level tasks like targeted refactors, small features, test coverage, PR reviews, and "
+                "building integrations. Mention the embedded VS Code interface and browser automation capabilities."
             ),
             AGENT_ID_CODEX_CLI: (
                 "Focus on how to set up Codex CLI for this repository. Explain how to install "
