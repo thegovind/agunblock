@@ -4,3 +4,5 @@ python-dotenv
 httpx
 azure-ai-agents
 githubkit
+aiohttp
+azure-identity

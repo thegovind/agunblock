@@ -1,16 +1,41 @@
 import base64
 from functools import lru_cache
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, List
 from githubkit import GitHub
 
 from ..config import GITHUB_TOKEN
 from ..constants import DEPENDENCY_FILES
+from ..models.schemas import RepositoryFileInfo
+
+
+def _safe_int_conversion(value, default=0):
+    """
+    Safely convert a value to an integer, handling '<UNSET>' strings and other edge cases.
+    
+    Args:
+        value: The value to convert
+        default: Default value to return if conversion fails
+        
+    Returns:
+        Integer value or default
+    """
+    if value is None:
+        return default
+    if isinstance(value, str) and value == '<UNSET>':
+        return default
+    if isinstance(value, (int, float)):
+        return int(value)
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return default
 
 
 @lru_cache
 def gh() -> GitHub:
     if not GITHUB_TOKEN:
-        raise RuntimeError("GITHUB_TOKEN not set")
+        print("Warning: GITHUB_TOKEN not set, using anonymous client with rate limits")
+        return GitHub()  # Anonymous client with rate limits
     return GitHub(GITHUB_TOKEN)
 
 
@@ -89,6 +114,87 @@ class GitHubService:
         
         return results
         
+    async def get_repository_files(self, owner: str, repo: str, branch: Optional[str] = None) -> List[RepositoryFileInfo]:
+        """
+        Get a list of all files in a repository using the Git Tree API.
+        
+        Args:
+            owner: Repository owner/organization
+            repo: Repository name
+            branch: Branch name (defaults to the repository's default branch)
+            
+        Returns:
+            List of RepositoryFileInfo objects representing files in the repository
+        """
+        try:
+            print(f"Fetching file list for {owner}/{repo}...")
+            client = gh()
+            
+            if not branch:
+                repo_info = client.rest.repos.get(owner=owner, repo=repo).parsed_data
+                branch = repo_info.default_branch
+                
+            branch_data = client.rest.repos.get_branch(owner=owner, repo=repo, branch=branch).parsed_data
+            commit_sha = branch_data.commit.sha
+            
+            tree_response = client.rest.git.get_tree(
+                owner=owner,
+                repo=repo,
+                tree_sha=commit_sha,
+                recursive="1"  # Get all files recursively
+            ).parsed_data
+            
+            files = []
+            for item in tree_response.tree:
+                # Handle size field that might contain '<UNSET>' strings
+                size_value = _safe_int_conversion(
+                    getattr(item, "size", None), 
+                    default=None
+                ) if hasattr(item, "size") else None
+                
+                files.append(
+                    RepositoryFileInfo(
+                        path=item.path,
+                        type=item.type,
+                        size=size_value
+                    )
+                )
+            
+            print(f"Found {len(files)} files in repository")
+            return files
+        except Exception as e:
+            error_message = str(e)
+            print(f"Error fetching repository files for {owner}/{repo}: {error_message}")
+            return []
+            
+    async def get_file_content(self, owner: str, repo: str, path: str, ref: Optional[str] = None) -> Optional[str]:
+        """
+        Get the content of a specific file in a repository.
+        
+        Args:
+            owner: Repository owner/organization
+            repo: Repository name
+            path: Path to the file
+            ref: Branch, tag, or commit SHA (defaults to the default branch)
+            
+        Returns:
+            File content as a string or None if not found
+        """
+        try:
+            content_response = gh().rest.repos.get_content(
+                owner=owner,
+                repo=repo,
+                path=path,
+                ref=ref
+            ).parsed_data
+            
+            if hasattr(content_response, "content") and hasattr(content_response, "encoding"):
+                if content_response.encoding == "base64":
+                    return base64.b64decode(content_response.content).decode("utf-8")
+            return None
+        except Exception:
+            return None
+            
     async def get_repository_snapshot(self, owner: str, repo: str) -> Optional[Dict[str, Any]]:
         """
         Get comprehensive repository information from GitHub API.
@@ -131,22 +237,27 @@ class GitHubService:
             except Exception as e:
                 print(f"Error fetching languages: {str(e)}")
             
+            files = await self.get_repository_files(owner, repo)
+            
+            # Handle stargazers_count that might contain '<UNSET>' strings
+            stars_count = _safe_int_conversion(
+                getattr(meta, "stargazers_count", 0), 
+                default=0
+            )
+            
             return {
                 "full_name": meta.full_name,
                 "description": meta.description or "No description available",
-                "stars": meta.stargazers_count,
+                "stars": stars_count,
                 "language": primary_language,
                 "default_branch": meta.default_branch,
                 "readme": readme,
+                "files": files
             }
         except Exception as e:
             error_message = str(e)
             print(f"Error in get_repository_snapshot for {owner}/{repo}: {error_message}")
             
-            # Add more detailed error information for debugging
-            if hasattr(e, 'response'):
-                print(f"Response status: {e.response.status_code}")
-                print(f"Response headers: {dict(e.response.headers)}")
-                print(f"Response body: {e.response.text}")
+            print(f"Detailed error: {repr(e)}")
             
             raise RuntimeError(f"Failed to fetch repository data: {error_message}")

@@ -1,11 +1,19 @@
 import asyncio
 import time
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any, Union, Callable, Awaitable
 
 from azure.ai.agents.aio import AgentsClient
+from azure.ai.agents.models import (
+    AgentThreadCreationOptions,
+    ThreadMessageOptions,
+    MessageTextContent,
+    ListSortOrder,
+)
 from azure.core.credentials import AzureKeyCredential
+from azure.identity.aio import DefaultAzureCredential
 
-from ..config import AZURE_AI_PROJECT_CONNECTION_STRING, AZURE_AI_AGENTS_API_KEY
+from ..config import PROJECT_ENDPOINT, MODEL_DEPLOYMENT_NAME, AZURE_AI_PROJECT_CONNECTION_STRING, AZURE_AI_AGENTS_API_KEY
+from ..models.schemas import AnalysisProgressUpdate
 from ..constants import (
     AGENT_ID_GITHUB_COPILOT_COMPLETIONS,
     AGENT_ID_GITHUB_COPILOT_AGENT,
@@ -23,85 +31,463 @@ class AzureAgentService:
     
     def __init__(self) -> None:
         """Initialize the Azure Agent Service with credentials."""
-        self.endpoint = AZURE_AI_PROJECT_CONNECTION_STRING
-        self.credential = None if not AZURE_AI_AGENTS_API_KEY or AZURE_AI_AGENTS_API_KEY == "your_api_key" else AzureKeyCredential(AZURE_AI_AGENTS_API_KEY)
+        # Use the new PROJECT_ENDPOINT format (following official samples)
+        self.endpoint = PROJECT_ENDPOINT or AZURE_AI_PROJECT_CONNECTION_STRING
+        self.model_deployment = MODEL_DEPLOYMENT_NAME
         
-    async def analyze_repository(self, agent_id: str, repo_name: str, readme_content: str, dependencies: Dict[str, str]) -> str:
+        if not self.endpoint:
+            raise ValueError("PROJECT_ENDPOINT environment variable is required. Set it to your Azure AI Project endpoint (e.g., https://your-project.services.ai.azure.com/api/projects/your-project-id)")
+        
+        # Ensure the endpoint uses HTTPS and fix common formatting issues
+        if self.endpoint and not self.endpoint.startswith('https://'):
+            if self.endpoint.startswith('http://'):
+                self.endpoint = self.endpoint.replace('http://', 'https://')
+            elif not self.endpoint.startswith('http'):
+                # If no protocol is specified, add https://
+                self.endpoint = f'https://{self.endpoint}'
+        
+        # Use DefaultAzureCredential as recommended, fall back to API key if available
+        try:
+            self.credential = DefaultAzureCredential()
+        except Exception:
+            # Fall back to API key authentication if DefaultAzureCredential fails
+            self.credential = None if not AZURE_AI_AGENTS_API_KEY or AZURE_AI_AGENTS_API_KEY == "your_api_key" else AzureKeyCredential(AZURE_AI_AGENTS_API_KEY)
+    
+    async def identify_config_files(self, repo_name: str, files: List[Dict[str, Any]]) -> List[str]:
         """
-        Analyze a repository using Azure AI Agents.
+        First step of the two-phase analysis: Identify configuration and dependency files.
+        
+        Args:
+            repo_name: The repository name in owner/repo format
+            files: List of files in the repository
+            
+        Returns:
+            List of file paths that are relevant for configuration
+        """
+        print(f"[CONFIG] Identifying configuration files for {repo_name}...")
+        start_time = time.time()
+        
+        if not self.endpoint or self.endpoint == "your_endpoint":
+            raise ValueError("Azure AI Project endpoint is not configured. Please set AZURE_AI_PROJECT_CONNECTION_STRING in your environment.")
+        
+        if not self.credential:
+            raise ValueError("Azure AI Agents credentials are not configured. Please run 'az login' for DefaultAzureCredential or set AZURE_AI_AGENTS_API_KEY in your environment.")
+        
+        try:
+            print(f"[CONFIG] Connecting to Azure AI Agents service...")
+            
+            # Use DefaultAzureCredential as async context manager if available
+            credential_context = self.credential if isinstance(self.credential, DefaultAzureCredential) else None
+            
+            if credential_context:
+                async with credential_context:
+                    async with AgentsClient(self.endpoint, credential_context) as client:
+                        return await self._process_config_identification(client, repo_name, files, start_time)
+            else:
+                async with AgentsClient(self.endpoint, self.credential) as client:
+                    return await self._process_config_identification(client, repo_name, files, start_time)
+        except Exception as e:
+            print(f"[CONFIG] Error during config file identification: {str(e)}")
+            raise RuntimeError(f"Error identifying configuration files: {str(e)}")
+
+    async def _process_config_identification(self, client: AgentsClient, repo_name: str, files: List[Dict[str, Any]], start_time: float) -> List[str]:
+        """Process config file identification using the new Azure AI Agents API."""
+        print(f"[CONFIG] Creating agent for config file identification...")
+        agent_instructions = """
+        You are an AI assistant that helps identify configuration and dependency files in a GitHub repository.
+        Your task is to analyze the list of files in a repository and identify the most important files for understanding:
+        1. How to install dependencies
+        2. How to configure the development environment
+        3. How to run the application
+        4. How to run tests and linting
+        
+        Focus on files like:
+        - Package management files (requirements.txt, package.json, etc.)
+        - Configuration files (.env.example, docker-compose.yml, etc.)
+        - Documentation files (README.md, INSTALL.md, etc.)
+        - Build configuration files (Makefile, webpack.config.js, etc.)
+        
+        Return a list of file paths, with the most important files first.
+        """
+        
+        agent = await client.create_agent(
+            model=self.model_deployment,
+            name="config-file-identifier",
+            instructions=agent_instructions,
+        )
+        
+        print(f"[CONFIG] Preparing file list for analysis ({len(files)} files)...")
+        file_list = "\n".join([f"{file['path']} ({file['type']})" for file in files[:100]])  # Limit to first 100 files
+        
+        content = f"Repository: {repo_name}\n\n"
+        content += "Files in repository:\n```\n" + file_list + "\n```\n\n"
+        content += "Please identify the most important configuration and dependency files from this list."
+        
+        print(f"[CONFIG] Starting config file identification with create_thread_and_process_run...")
+        run = await client.create_thread_and_process_run(
+            agent_id=agent.id,
+            thread=AgentThreadCreationOptions(
+                messages=[ThreadMessageOptions(role="user", content=content)]
+            ),
+        )
+        
+        if run.status == "failed":
+            error_msg = f"Config identification failed: {run.last_error if run.last_error else 'Unknown error'}"
+            print(f"[CONFIG] {error_msg}")
+            raise RuntimeError(error_msg)
+        
+        print(f"[CONFIG] Config file identification completed after {time.time() - start_time:.2f} seconds")
+        print(f"[CONFIG] Retrieving config file identification results...")
+        
+        # List all messages in the thread, in ascending order of creation
+        messages = client.messages.list(
+            thread_id=run.thread_id,
+            order=ListSortOrder.ASCENDING,
+        )
+        
+        response = ""
+        async for msg in messages:
+            if msg.role == "assistant":
+                last_part = msg.content[-1]
+                if isinstance(last_part, MessageTextContent):
+                    response = last_part.text.value
+                    break
+        
+        if response:
+            import re
+            file_paths = re.findall(r'`([^`]+)`|"([^"]+)"|\'([^\']+)\'', response)
+            file_paths = [path[0] or path[1] or path[2] for path in file_paths if any(path)]
+            
+            # Filter to ensure they exist in the repository
+            repo_files = [file["path"] for file in files]
+            valid_files = [path for path in file_paths if path in repo_files]
+            
+            # Clean up the agent
+            try:
+                await client.delete_agent(agent.id)
+                print(f"[CONFIG] Deleted agent {agent.id}")
+            except Exception as e:
+                print(f"[CONFIG] Warning: Could not delete agent {agent.id}: {str(e)}")
+            
+            if valid_files:
+                valid_files = valid_files[:10]  # Limit to 10 most important files
+                print(f"[CONFIG] Identified {len(valid_files)} config files in {time.time() - start_time:.2f} seconds: {', '.join(valid_files[:5])}" + ("..." if len(valid_files) > 5 else ""))
+                return valid_files
+        
+        print(f"[CONFIG] No valid configuration files identified after {time.time() - start_time:.2f} seconds")
+        raise RuntimeError("No valid configuration files identified by the agent")
+        
+    async def extract_setup_instructions(self, agent_id: str, repo_name: str, file_contents: Dict[str, str]) -> Dict[str, str]:
+        """
+        Second step of the two-phase analysis: Extract setup instructions from config files.
+        
+        Args:
+            agent_id: The type of AI agent ("github-copilot", "devin", etc.)
+            repo_name: The repository name in owner/repo format
+            file_contents: Dictionary mapping file paths to their contents
+            
+        Returns:
+            Dictionary of setup commands for Devin
+        """
+        print(f"[SETUP] Extracting setup instructions for {repo_name} with agent: {agent_id}...")
+        start_time = time.time()
+        
+        if not self.endpoint or self.endpoint == "your_endpoint":
+            raise ValueError("Azure AI Project endpoint is not configured. Please set AZURE_AI_PROJECT_CONNECTION_STRING in your environment.")
+        
+        if not self.credential:
+            raise ValueError("Azure AI Agents credentials are not configured. Please run 'az login' for DefaultAzureCredential or set AZURE_AI_AGENTS_API_KEY in your environment.")
+        
+        try:
+            print(f"[SETUP] Connecting to Azure AI Agents service...")
+            
+            # Use DefaultAzureCredential as async context manager if available
+            credential_context = self.credential if isinstance(self.credential, DefaultAzureCredential) else None
+            
+            if credential_context:
+                async with credential_context:
+                    async with AgentsClient(self.endpoint, credential_context) as client:
+                        return await self._process_setup_extraction(client, agent_id, repo_name, file_contents, start_time)
+            else:
+                async with AgentsClient(self.endpoint, self.credential) as client:
+                    return await self._process_setup_extraction(client, agent_id, repo_name, file_contents, start_time)
+        except Exception as e:
+            print(f"[SETUP] Error during setup instruction extraction: {str(e)}")
+            raise RuntimeError(f"Error extracting setup instructions: {str(e)}")
+
+    async def _process_setup_extraction(self, client: AgentsClient, agent_id: str, repo_name: str, file_contents: Dict[str, str], start_time: float) -> Dict[str, str]:
+        """Process setup instruction extraction using the new Azure AI Agents API."""
+        print(f"[SETUP] Creating agent for setup instruction extraction...")
+        agent_instructions = """
+        You are an AI assistant that helps extract setup instructions from repository configuration files.
+        Your task is to analyze the content of configuration files and extract commands for:
+        
+        1. Prerequisites: What software needs to be installed before working with this repo
+        2. Dependencies: How to install project dependencies
+        3. Run App: How to run the application locally
+        4. Linting: How to run linters or code quality checks
+        5. Testing: How to run tests
+        
+        Format your response as a JSON object with these keys:
+        {
+            "prerequisites": "Commands to install prerequisites",
+            "dependencies": "Commands to install dependencies",
+            "run_app": "Commands to run the app",
+            "linting": "Commands to run linters",
+            "testing": "Commands to run tests"
+        }
+        
+        Be specific and provide exact commands that would work in a terminal.
+        """
+        
+        agent = await client.create_agent(
+            model=self.model_deployment,
+            name="setup-instruction-extractor",
+            instructions=agent_instructions,
+        )
+        
+        print(f"[SETUP] Preparing configuration files for analysis ({len(file_contents)} files)...")
+        content = f"Repository: {repo_name}\n\n"
+        content += "Configuration Files:\n\n"
+        
+        for file_path, file_content in file_contents.items():
+            content += f"File: {file_path}\n```\n{file_content[:5000]}\n```\n\n"  # Limit file content to 5000 chars
+        
+        content += "Please extract setup instructions from these files in the format specified."
+        
+        print(f"[SETUP] Starting setup instruction extraction with create_thread_and_process_run...")
+        run = await client.create_thread_and_process_run(
+            agent_id=agent.id,
+            thread=AgentThreadCreationOptions(
+                messages=[ThreadMessageOptions(role="user", content=content)]
+            ),
+        )
+        
+        if run.status == "failed":
+            error_msg = f"Setup extraction failed: {run.last_error if run.last_error else 'Unknown error'}"
+            print(f"[SETUP] {error_msg}")
+            raise RuntimeError(error_msg)
+        
+        print(f"[SETUP] Setup instruction extraction completed after {time.time() - start_time:.2f} seconds")
+        print(f"[SETUP] Retrieving setup instruction extraction results...")
+        
+        # List all messages in the thread, in ascending order of creation
+        messages = client.messages.list(
+            thread_id=run.thread_id,
+            order=ListSortOrder.ASCENDING,
+        )
+        
+        response = ""
+        async for msg in messages:
+            if msg.role == "assistant":
+                last_part = msg.content[-1]
+                if isinstance(last_part, MessageTextContent):
+                    response = last_part.text.value
+                    break
+        
+        if response:
+            import json
+            import re
+            
+            print(f"[SETUP] Parsing JSON response...")
+            json_match = re.search(r'```json\s*(.*?)\s*```', response, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(1)
+            else:
+                json_match = re.search(r'(\{.*\})', response, re.DOTALL)
+                if json_match:
+                    json_str = json_match.group(1)
+                else:
+                    json_str = response
+            
+            try:
+                setup_instructions = json.loads(json_str)
+                
+                # Clean up the agent
+                try:
+                    await client.delete_agent(agent.id)
+                    print(f"[SETUP] Deleted agent {agent.id}")
+                except Exception as e:
+                    print(f"[SETUP] Warning: Could not delete agent {agent.id}: {str(e)}")
+                
+                print(f"[SETUP] Successfully extracted setup instructions in {time.time() - start_time:.2f} seconds: {', '.join(setup_instructions.keys())}")
+                return setup_instructions
+            except json.JSONDecodeError:
+                print(f"[SETUP] Failed to parse JSON from response after {time.time() - start_time:.2f} seconds")
+                raise RuntimeError("Failed to parse JSON from response")
+        
+        print(f"[SETUP] No setup instructions found in agent response after {time.time() - start_time:.2f} seconds")
+        raise RuntimeError("No setup instructions found in agent response")
+            
+    async def analyze_repository(self, agent_id: str, repo_name: str, readme_content: str, dependencies: Dict[str, str], files: Optional[List[Dict[str, Any]]] = None, progress_callback: Optional[Callable[[AnalysisProgressUpdate], Awaitable[None]]] = None) -> Dict[str, Any]:
+        """
+        Analyze a repository using Azure AI Agents with a two-step process.
         
         Args:
             agent_id: The type of AI agent ("github-copilot", "devin", etc.)
             repo_name: The repository name in owner/repo format
             readme_content: The README content of the repository
             dependencies: Dictionary of dependency files and their contents
-        
-        Returns:
-            Analysis results as a string
-        """
-        print(f"Analyzing repository: {repo_name} with agent: {agent_id}")
-        print(f"Endpoint: {self.endpoint}, Credential: {self.credential is not None}")
-        
-        if True or not self.credential or not self.endpoint or self.endpoint == "your_endpoint":
-            print(f"Using mock data for {agent_id} and {repo_name}")
-            mock_analysis = self._generate_mock_analysis(agent_id, repo_name, readme_content, dependencies)
-            print(f"Generated mock analysis length: {len(mock_analysis)}")
-            return mock_analysis
+            files: List of files in the repository (optional)
             
-        try:
-            async with AgentsClient(self.endpoint, self.credential) as client:
-                agent_instructions = self._get_agent_instructions(agent_id)
-                agent = await client.create_agent(
-                    project="agunblock",
-                    model="gpt-4",
-                    name=f"{agent_id}-analyzer",
-                    instructions=agent_instructions,
-                )
-                
-                thread = await client.create_thread()
-                
-                content = f"Repository: {repo_name}\n\n"
-                content += "README:\n```\n" + (readme_content or "No README found") + "\n```\n\n"
-                
-                if dependencies:
-                    content += "Dependencies:\n"
-                    for file_name, file_content in dependencies.items():
-                        content += f"{file_name}:\n```\n{file_content}\n```\n\n"
-                
-                await client.create_message(
-                    thread.id,
-                    content=content,
-                    role="user"
-                )
-                
-                run = await client.create_run(thread.id, agent.id)
-                
-                status = None
-                while status not in ["completed", "failed", "cancelled", "expired"]:
-                    run = await client.get_run(thread.id, run.id)
-                    status = run.status
-                    
-                    if status == "completed":
-                        break
-                        
-                    if status in ["failed", "cancelled", "expired"]:
-                        return f"Error: Agent run {status}"
-                    
-                    await asyncio.sleep(2)
-                
-                messages = await client.list_messages(thread.id)
-                
-                assistant_messages = [message for message in messages if message.role == "assistant"]
-                if assistant_messages:
-                    return assistant_messages[-1].content
-                
-                return "No analysis results found"
-        except Exception as e:
-            return f"Error connecting to Azure AI Agents: {str(e)}\n\nUsing mock data instead:\n\n{self._generate_mock_analysis(agent_id, repo_name, readme_content, dependencies)}"
-    
-    def _generate_mock_analysis(self, agent_id: str, repo_name: str, readme_content: str, dependencies: Dict[str, str]) -> str:
+        Returns:
+            Dictionary with analysis results and setup commands
         """
-        Generate mock analysis data for testing purposes.
+        print(f"[ANALYSIS] Starting analysis for repository: {repo_name} with agent: {agent_id}")
+        print(f"[ANALYSIS] Azure AI Agents endpoint configured: {self.endpoint != 'your_endpoint'}, Credentials available: {self.credential is not None}")
+        
+        if not self.endpoint or self.endpoint == "your_endpoint":
+            raise ValueError("Azure AI Project endpoint is not configured. Please set AZURE_AI_PROJECT_CONNECTION_STRING in your environment.")
+        
+        if not self.credential:
+            raise ValueError("Azure AI Agents credentials are not configured. Please run 'az login' for DefaultAzureCredential or set AZURE_AI_AGENTS_API_KEY in your environment.")
+        
+        # Send initial progress update
+        if progress_callback:
+            await progress_callback(AnalysisProgressUpdate(
+                step=1,
+                step_name="Analyzing Repository Content",
+                status="starting",
+                message=f"Starting analysis for {repo_name} with {agent_id}",
+                progress_percentage=0
+            ))
+        
+        print(f"[ANALYSIS] Step 1/3: Analyzing repository content for {repo_name}...")
+        analysis_start_time = time.time()
+        
+        if progress_callback:
+            await progress_callback(AnalysisProgressUpdate(
+                step=1,
+                step_name="Analyzing Repository Content",
+                status="in_progress",
+                message="Azure AI Agents is analyzing the repository structure and README",
+                progress_percentage=10
+            ))
+        
+        analysis = await self._analyze_with_azure_agents(agent_id, repo_name, readme_content, dependencies)
+        analysis_duration = time.time() - analysis_start_time
+        print(f"[ANALYSIS] Step 1/3 completed in {analysis_duration:.2f} seconds. Generated analysis length: {len(analysis)}")
+        
+        if progress_callback:
+            await progress_callback(AnalysisProgressUpdate(
+                step=1,
+                step_name="Analyzing Repository Content",
+                status="completed",
+                message=f"Repository analysis completed in {analysis_duration:.1f} seconds",
+                progress_percentage=33,
+                elapsed_time=analysis_duration,
+                details={"analysis_length": len(analysis)}
+            ))
+        
+        # Step 2: If files are provided, perform the two-step analysis for setup commands
+        if files:
+            # Step 2: Identify configuration files
+            if progress_callback:
+                await progress_callback(AnalysisProgressUpdate(
+                    step=2,
+                    step_name="Identifying Configuration Files",
+                    status="starting",
+                    message="Scanning repository files to identify configuration and dependency files",
+                    progress_percentage=35
+                ))
+            
+            print(f"[ANALYSIS] Step 2/3: Identifying configuration files for {repo_name}...")
+            config_start_time = time.time()
+            
+            if progress_callback:
+                await progress_callback(AnalysisProgressUpdate(
+                    step=2,
+                    step_name="Identifying Configuration Files",
+                    status="in_progress",
+                    message=f"Azure AI Agents is analyzing {len(files)} files to identify important configuration files",
+                    progress_percentage=45
+                ))
+            
+            config_files = await self.identify_config_files(repo_name, files)
+            config_duration = time.time() - config_start_time
+            print(f"[ANALYSIS] Step 2/3 completed in {config_duration:.2f} seconds. Identified {len(config_files)} configuration files: {', '.join(config_files[:5])}" + ("..." if len(config_files) > 5 else ""))
+            
+            if progress_callback:
+                await progress_callback(AnalysisProgressUpdate(
+                    step=2,
+                    step_name="Identifying Configuration Files",
+                    status="completed",
+                    message=f"Identified {len(config_files)} configuration files in {config_duration:.1f} seconds",
+                    progress_percentage=66,
+                    elapsed_time=config_duration,
+                    details={"config_files_count": len(config_files), "config_files": config_files[:5]}
+                ))
+            
+            # Step 3: Extract setup instructions
+            if progress_callback:
+                await progress_callback(AnalysisProgressUpdate(
+                    step=3,
+                    step_name="Extracting Setup Instructions",
+                    status="starting",
+                    message="Extracting detailed setup instructions from configuration files",
+                    progress_percentage=70
+                ))
+            
+            print(f"[ANALYSIS] Step 3/3: Extracting setup instructions from configuration files...")
+            setup_start_time = time.time()
+            file_contents = {file_path: dependencies.get(file_path, "") for file_path in config_files if file_path in dependencies}
+            
+            if readme_content:
+                file_contents["README.md"] = readme_content
+            
+            if progress_callback:
+                await progress_callback(AnalysisProgressUpdate(
+                    step=3,
+                    step_name="Extracting Setup Instructions",
+                    status="in_progress",
+                    message=f"Azure AI Agents is extracting setup commands from {len(file_contents)} configuration files",
+                    progress_percentage=85
+                ))
+            
+            setup_commands = await self.extract_setup_instructions(agent_id, repo_name, file_contents)
+            setup_duration = time.time() - setup_start_time
+            print(f"[ANALYSIS] Step 3/3 completed in {setup_duration:.2f} seconds. Extracted setup commands for: {', '.join(setup_commands.keys())}")
+            
+            total_duration = time.time() - analysis_start_time
+            print(f"[ANALYSIS] Total analysis completed in {total_duration:.2f} seconds for {repo_name}")
+            
+            if progress_callback:
+                await progress_callback(AnalysisProgressUpdate(
+                    step=3,
+                    step_name="Extracting Setup Instructions",
+                    status="completed",
+                    message=f"Setup instructions extracted successfully in {setup_duration:.1f} seconds",
+                    progress_percentage=100,
+                    elapsed_time=total_duration,
+                    details={"setup_commands": list(setup_commands.keys()), "total_duration": total_duration}
+                ))
+            
+            return {
+                "analysis": analysis,
+                "setup_commands": setup_commands
+            }
+        
+        print(f"[ANALYSIS] Analysis completed for {repo_name} (without setup commands)")
+        
+        if progress_callback:
+            total_duration = time.time() - analysis_start_time
+            await progress_callback(AnalysisProgressUpdate(
+                step=1,
+                step_name="Analysis Complete",
+                status="completed",
+                message="Repository analysis completed successfully",
+                progress_percentage=100,
+                elapsed_time=total_duration,
+                details={"analysis_length": len(analysis)}
+            ))
+        
+        return {
+            "analysis": analysis
+        }
+    
+    async def _analyze_with_azure_agents(self, agent_id: str, repo_name: str, readme_content: str, dependencies: Dict[str, str]) -> str:
+        """
+        Analyze a repository using Azure AI Agents.
         
         Args:
             agent_id: The type of AI agent
@@ -110,167 +496,91 @@ class AzureAgentService:
             dependencies: Dictionary of dependency files and their contents
             
         Returns:
-            Mock analysis as a string
+            Analysis results as a string
         """
-        language = "JavaScript"
-        if dependencies:
-            for dep_file, lang in LANGUAGE_MAP.items():
-                if dep_file in dependencies:
-                    language = lang
-                    break
-                
-        analyses = {
-            AGENT_ID_GITHUB_COPILOT_COMPLETIONS: f"""## GitHub Copilot (Code Completions) Analysis for {repo_name}
+        try:
+            print(f"[ANALYSIS] Connecting to Azure AI Agents service...")
+            start_time = time.time()
+            
+            # Use DefaultAzureCredential as async context manager if available
+            credential_context = self.credential if isinstance(self.credential, DefaultAzureCredential) else None
+            
+            if credential_context:
+                async with credential_context:
+                    async with AgentsClient(self.endpoint, credential_context) as client:
+                        return await self._process_analysis(client, agent_id, repo_name, readme_content, dependencies, start_time)
+            else:
+                async with AgentsClient(self.endpoint, self.credential) as client:
+                    return await self._process_analysis(client, agent_id, repo_name, readme_content, dependencies, start_time)
+                    
+        except Exception as e:
+            print(f"[ANALYSIS] Error during analysis: {str(e)}")
+            raise RuntimeError(f"Error connecting to Azure AI Agents: {str(e)}")
 
-This repository is well-suited for GitHub Copilot code completions. Based on the codebase structure and {language} language, here's how to set up:
-
-### Setup Instructions
-
-1. Install GitHub Copilot extension in VS Code, JetBrains, or other supported IDEs
-2. Open files from this repository and start coding
-3. GitHub Copilot will provide contextual suggestions as you type
-
-- Enable inline suggestions
-- Configure Copilot to analyze your entire workspace for better context
-- Use Copilot Chat for explaining code and generating documentation
-- This {language} codebase will benefit from Copilot's strong understanding of standard libraries and frameworks
-- Use comments to guide Copilot when working with complex or custom components
-- For large files, consider breaking them down into smaller components for better suggestions
-
-```bash
-# Clone the repository
-git clone https://github.com/{repo_name}.git
-cd {repo_name.split('/')[1]}
-
-code .
-```
-
-Enable GitHub Copilot in your editor settings and start coding with AI assistance!""",
-            AGENT_ID_GITHUB_COPILOT_AGENT: f"""## GitHub Copilot Coding Agent Analysis for {repo_name}
-
-This repository can benefit from GitHub Copilot Coding Agent for asynchronous, issue-driven automation. Here's how to set up:
-
-### Setup Instructions
-
-1. Assign GitHub Issues to Copilot Agent in your repository
-2. The agent will autonomously create pull requests, run CI/CD, and iterate on feedback
-3. Review and merge the agent's pull requests as needed
-
-- Automate feature additions, bug fixes, refactoring, and more
-- Leverage GitHub's security and review workflows
-- Monitor the agent's progress in draft pull requests
-
-```bash
-# Example: Assign an issue to Copilot Agent
-# On GitHub, assign the issue to @github-copilot-agent
-```
-
-Copilot Coding Agent works best with clear, well-scoped issues and access to your repository's context.""",
-            AGENT_ID_DEVIN: f"""## Devin Configuration for {repo_name}
-
-This {language} repository can be effectively worked on using Devin. Here's the setup:
-
-### Setup Instructions
-
-1. Access Devin through Azure Marketplace
-2. Clone this repository using: `git clone https://github.com/{repo_name}.git`
-3. Ask Devin to analyze the repository structure
-4. Specify tasks you want Devin to help with
-
-- Provide Devin with full repository access for context
-- Use natural language to describe your development goals
-- Allow Devin to suggest architectural improvements
-- For this {language} codebase, Devin can help with:
-  - Code refactoring and optimization
-  - Implementing new features
-  - Debugging complex issues
-  - Writing comprehensive tests
-
-```
-"Devin, analyze this {language} repository and suggest performance improvements"
-"Help me implement a new feature that does X in this codebase"
-"Debug why this function is not working as expected"
-```
-
-Devin works best with this repository by understanding the full context of files and dependencies.""",
-            AGENT_ID_CODEX_CLI: f"""## Codex CLI Setup for {repo_name}
-
-This guide will help you set up Codex CLI to work with this {language} repository.
-
-### Setup Instructions
-
-1. Set up Azure OpenAI Service with Codex model or use OpenAI endpoint
-2. Install the Codex CLI tool
-3. Configure your API key
-4. Clone the repository
-5. Use the following commands to analyze code
-
-```bash
-pip install codex-cli
-
-codex configure --api-key YOUR_API_KEY
-
-# Clone the repository
-git clone https://github.com/{repo_name}.git
-cd {repo_name.split('/')[1]}
-```
-
-```bash
-# Analyze a specific file
-codex explain -f [filename]
-
-codex generate -p "Create a function that..."
-
-codex optimize -f [filename]
-```
-
-- Use Codex CLI to generate boilerplate code
-- Ask for explanations of complex functions
-- Generate unit tests for critical components
-- Use for documentation generation
-
-This repository's structure is compatible with Codex CLI's code generation capabilities.""",
-            AGENT_ID_SREAGENT: f"""## SREAgent Configuration for {repo_name}
-
-This guide will help you set up SREAgent for this {language} repository.
-
-### Setup Instructions
-
-1. Set up SREAgent in your Azure environment
-2. Connect this repository using the SREAgent GitHub integration
-3. Configure monitoring settings in the Azure portal
-4. Set up alert policies based on repository activity
-
-```bash
-pip install sreagent-cli
-
-sreagent configure --subscription YOUR_SUBSCRIPTION_ID
-
-# Connect repository
-sreagent connect --repo {repo_name}
-
-sreagent monitor --setup
-```
-
-- Deployment frequency
-- Error rates
-- Performance metrics
-- Infrastructure usage
-- API response times
-- Resource utilization
-
-Based on this {language} repository, we recommend setting up alerts for:
-- Failed deployments
-- Unusual error rate spikes
-- Performance degradation
-- Resource constraints
-
-SREAgent can help maintain reliability for services deployed from this repository."""
-        }
+    async def _process_analysis(self, client: AgentsClient, agent_id: str, repo_name: str, readme_content: str, dependencies: Dict[str, str], start_time: float) -> str:
+        """Process the analysis using the new Azure AI Agents API."""
+        print(f"[ANALYSIS] Creating agent with ID: {agent_id}...")
+        agent_instructions = self._get_agent_instructions(agent_id)
+        agent = await client.create_agent(
+            model=self.model_deployment,
+            name=f"{agent_id}-analyzer",
+            instructions=agent_instructions,
+        )
         
-        # Support legacy IDs for backward compatibility
-        lookup_id = LEGACY_AGENT_ID_MAP.get(agent_id, agent_id)
-        return analyses.get(lookup_id, f"No specific analysis available for {agent_id} and {repo_name}. Please try another agent.")
+        print(f"[ANALYSIS] Preparing repository content for analysis...")
+        content = f"Repository: {repo_name}\n\n"
+        content += "README:\n```\n" + (readme_content or "No README found") + "\n```\n\n"
+        
+        if dependencies:
+            content += f"Dependencies ({len(dependencies)} files):\n"
+            for file_name, file_content in dependencies.items():
+                content += f"{file_name}:\n```\n{file_content}\n```\n\n"
+        
+        print(f"[ANALYSIS] Starting analysis with create_thread_and_process_run...")
+        run = await client.create_thread_and_process_run(
+            agent_id=agent.id,
+            thread=AgentThreadCreationOptions(
+                messages=[ThreadMessageOptions(role="user", content=content)]
+            ),
+        )
+        
+        if run.status == "failed":
+            error_msg = f"Analysis failed: {run.last_error if run.last_error else 'Unknown error'}"
+            print(f"[ANALYSIS] {error_msg}")
+            raise RuntimeError(error_msg)
+        
+        print(f"[ANALYSIS] Analysis completed after {time.time() - start_time:.2f} seconds")
+        print(f"[ANALYSIS] Retrieving analysis results...")
+        
+        # List all messages in the thread, in ascending order of creation
+        messages = client.messages.list(
+            thread_id=run.thread_id,
+            order=ListSortOrder.ASCENDING,
+        )
+        
+        result_content = ""
+        async for msg in messages:
+            if msg.role == "assistant":
+                last_part = msg.content[-1]
+                if isinstance(last_part, MessageTextContent):
+                    result_content = last_part.text.value
+                    break
+        
+        if result_content:
+            print(f"[ANALYSIS] Analysis completed successfully in {time.time() - start_time:.2f} seconds (result length: {len(result_content)} chars)")
+            
+            # Clean up the agent
+            try:
+                await client.delete_agent(agent.id)
+                print(f"[ANALYSIS] Deleted agent {agent.id}")
+            except Exception as e:
+                print(f"[ANALYSIS] Warning: Could not delete agent {agent.id}: {str(e)}")
+            
+            return result_content
+        
+        print(f"[ANALYSIS] No analysis results found after {time.time() - start_time:.2f} seconds")
+        raise RuntimeError("No analysis results found")
+    
 
     def _get_agent_instructions(self, agent_id: str) -> str:
         """
@@ -300,8 +610,8 @@ SREAgent can help maintain reliability for services deployed from this repositor
                 "effective use based on this repository's structure and requirements."
             ),
             AGENT_ID_DEVIN: (
-                "Focus on how to set up Devin for this repository. Explain how to access Devin "
-                "through Azure Marketplace, how to clone and configure this repository for Devin, "
+                "Focus on how to set up Devin for this repository. Devin is SWE Agent from Cognition Explain how to access Devin "
+                "through Azure Marketplace at https://aka.ms/devin, how to clone and configure this repository for Devin, "
                 "and provide tips for effective collaboration with Devin based on this repository's "
                 "structure and requirements."
             ),
