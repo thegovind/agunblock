@@ -37,13 +37,17 @@ class AzureAgentService:
         Returns:
             List of file paths that are relevant for configuration
         """
-        print(f"Identifying configuration files for {repo_name}...")
+        print(f"[CONFIG] Identifying configuration files for {repo_name}...")
+        start_time = time.time()
         
         if not self.credential or not self.endpoint or self.endpoint == "your_endpoint":
             raise ValueError("Azure AI Agents credentials are not configured. Please set AZURE_AI_AGENTS_API_KEY and AZURE_AI_PROJECT_CONNECTION_STRING in your environment.")
         
         try:
+            print(f"[CONFIG] Connecting to Azure AI Agents service...")
+            
             async with AgentsClient(self.endpoint, self.credential) as client:
+                print(f"[CONFIG] Creating agent for config file identification...")
                 agent_instructions = """
                 You are an AI assistant that helps identify configuration and dependency files in a GitHub repository.
                 Your task is to analyze the list of files in a repository and identify the most important files for understanding:
@@ -68,35 +72,53 @@ class AzureAgentService:
                     instructions=agent_instructions,
                 )
                 
+                print(f"[CONFIG] Creating thread for config file identification...")
                 thread = await client.create_thread()
                 
+                print(f"[CONFIG] Preparing file list for analysis ({len(files)} files)...")
                 file_list = "\n".join([f"{file['path']} ({file['type']})" for file in files[:100]])  # Limit to first 100 files
                 
                 content = f"Repository: {repo_name}\n\n"
                 content += "Files in repository:\n```\n" + file_list + "\n```\n\n"
                 content += "Please identify the most important configuration and dependency files from this list."
                 
+                print(f"[CONFIG] Sending file list to Azure AI Agents...")
                 await client.create_message(
                     thread.id,
                     content=content,
                     role="user"
                 )
                 
+                print(f"[CONFIG] Starting config file identification run...")
                 run = await client.create_run(thread.id, agent.id)
                 
+                print(f"[CONFIG] Waiting for config file identification to complete...")
                 status = None
+                last_status_time = time.time()
+                
                 while status not in ["completed", "failed", "cancelled", "expired"]:
                     run = await client.get_run(thread.id, run.id)
                     status = run.status
                     
+                    current_time = time.time()
+                    elapsed = current_time - start_time
+                    since_last_update = current_time - last_status_time
+                    
                     if status == "completed":
+                        print(f"[CONFIG] Config file identification completed after {elapsed:.2f} seconds")
                         break
                         
                     if status in ["failed", "cancelled", "expired"]:
+                        print(f"[CONFIG] Config file identification failed with status: {status} after {elapsed:.2f} seconds")
                         raise RuntimeError(f"Agent run {status}")
+                    
+                    if since_last_update >= 10:
+                        print(f"[CONFIG] Still identifying config files... (elapsed: {elapsed:.2f}s, status: {status})")
+                        last_status_time = current_time
                     
                     await asyncio.sleep(2)
                 
+                print(f"[CONFIG] Retrieving config file identification results...")
                 messages = await client.list_messages(thread.id)
                 
                 assistant_messages = [message for message in messages if message.role == "assistant"]
@@ -111,10 +133,14 @@ class AzureAgentService:
                     valid_files = [path for path in file_paths if path in repo_files]
                     
                     if valid_files:
-                        return valid_files[:10]  # Limit to 10 most important files
+                        valid_files = valid_files[:10]  # Limit to 10 most important files
+                        print(f"[CONFIG] Identified {len(valid_files)} config files in {time.time() - start_time:.2f} seconds: {', '.join(valid_files[:5])}" + ("..." if len(valid_files) > 5 else ""))
+                        return valid_files
                 
+                print(f"[CONFIG] No valid configuration files identified after {time.time() - start_time:.2f} seconds")
                 raise RuntimeError("No valid configuration files identified by the agent")
         except Exception as e:
+            print(f"[CONFIG] Error during config file identification: {str(e)}")
             raise RuntimeError(f"Error identifying configuration files: {str(e)}")
     
         
@@ -130,13 +156,17 @@ class AzureAgentService:
         Returns:
             Dictionary of setup commands for Devin
         """
-        print(f"Extracting setup instructions for {repo_name} with agent: {agent_id}...")
+        print(f"[SETUP] Extracting setup instructions for {repo_name} with agent: {agent_id}...")
+        start_time = time.time()
         
         if not self.credential or not self.endpoint or self.endpoint == "your_endpoint":
             raise ValueError("Azure AI Agents credentials are not configured. Please set AZURE_AI_AGENTS_API_KEY and AZURE_AI_PROJECT_CONNECTION_STRING in your environment.")
         
         try:
+            print(f"[SETUP] Connecting to Azure AI Agents service...")
+            
             async with AgentsClient(self.endpoint, self.credential) as client:
+                print(f"[SETUP] Creating agent for setup instruction extraction...")
                 agent_instructions = """
                 You are an AI assistant that helps extract setup instructions from repository configuration files.
                 Your task is to analyze the content of configuration files and extract commands for:
@@ -166,8 +196,10 @@ class AzureAgentService:
                     instructions=agent_instructions,
                 )
                 
+                print(f"[SETUP] Creating thread for setup instruction extraction...")
                 thread = await client.create_thread()
                 
+                print(f"[SETUP] Preparing configuration files for analysis ({len(file_contents)} files)...")
                 content = f"Repository: {repo_name}\n\n"
                 content += "Configuration Files:\n\n"
                 
@@ -176,27 +208,43 @@ class AzureAgentService:
                 
                 content += "Please extract setup instructions from these files in the format specified."
                 
+                print(f"[SETUP] Sending configuration files to Azure AI Agents...")
                 await client.create_message(
                     thread.id,
                     content=content,
                     role="user"
                 )
                 
+                print(f"[SETUP] Starting setup instruction extraction run...")
                 run = await client.create_run(thread.id, agent.id)
                 
+                print(f"[SETUP] Waiting for setup instruction extraction to complete...")
                 status = None
+                last_status_time = time.time()
+                
                 while status not in ["completed", "failed", "cancelled", "expired"]:
                     run = await client.get_run(thread.id, run.id)
                     status = run.status
                     
+                    current_time = time.time()
+                    elapsed = current_time - start_time
+                    since_last_update = current_time - last_status_time
+                    
                     if status == "completed":
+                        print(f"[SETUP] Setup instruction extraction completed after {elapsed:.2f} seconds")
                         break
                         
                     if status in ["failed", "cancelled", "expired"]:
+                        print(f"[SETUP] Setup instruction extraction failed with status: {status} after {elapsed:.2f} seconds")
                         raise RuntimeError(f"Agent run {status}")
+                    
+                    if since_last_update >= 10:
+                        print(f"[SETUP] Still extracting setup instructions... (elapsed: {elapsed:.2f}s, status: {status})")
+                        last_status_time = current_time
                     
                     await asyncio.sleep(2)
                 
+                print(f"[SETUP] Retrieving setup instruction extraction results...")
                 messages = await client.list_messages(thread.id)
                 
                 assistant_messages = [message for message in messages if message.role == "assistant"]
@@ -206,6 +254,7 @@ class AzureAgentService:
                     import json
                     import re
                     
+                    print(f"[SETUP] Parsing JSON response...")
                     json_match = re.search(r'```json\s*(.*?)\s*```', response, re.DOTALL)
                     if json_match:
                         json_str = json_match.group(1)
@@ -218,12 +267,16 @@ class AzureAgentService:
                     
                     try:
                         setup_instructions = json.loads(json_str)
+                        print(f"[SETUP] Successfully extracted setup instructions in {time.time() - start_time:.2f} seconds: {', '.join(setup_instructions.keys())}")
                         return setup_instructions
                     except json.JSONDecodeError:
+                        print(f"[SETUP] Failed to parse JSON from response after {time.time() - start_time:.2f} seconds")
                         raise RuntimeError("Failed to parse JSON from response")
                 
+                print(f"[SETUP] No setup instructions found in agent response after {time.time() - start_time:.2f} seconds")
                 raise RuntimeError("No setup instructions found in agent response")
         except Exception as e:
+            print(f"[SETUP] Error during setup instruction extraction: {str(e)}")
             raise RuntimeError(f"Error extracting setup instructions: {str(e)}")
             
     async def analyze_repository(self, agent_id: str, repo_name: str, readme_content: str, dependencies: Dict[str, str], files: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
@@ -240,36 +293,48 @@ class AzureAgentService:
         Returns:
             Dictionary with analysis results and setup commands
         """
-        print(f"Analyzing repository: {repo_name} with agent: {agent_id}")
-        print(f"Endpoint: {self.endpoint}, Credential: {self.credential is not None}")
+        print(f"[ANALYSIS] Starting analysis for repository: {repo_name} with agent: {agent_id}")
+        print(f"[ANALYSIS] Azure AI Agents endpoint configured: {self.endpoint != 'your_endpoint'}, Credentials available: {self.credential is not None}")
         
         if not self.credential or not self.endpoint or self.endpoint == "your_endpoint":
             raise ValueError("Azure AI Agents credentials are not configured. Please set AZURE_AI_AGENTS_API_KEY and AZURE_AI_PROJECT_CONNECTION_STRING in your environment.")
         
-        print(f"Starting repository analysis for {repo_name} with agent: {agent_id}...")
+        print(f"[ANALYSIS] Step 1/3: Analyzing repository content for {repo_name}...")
+        analysis_start_time = time.time()
         analysis = await self._analyze_with_azure_agents(agent_id, repo_name, readme_content, dependencies)
-        print(f"Generated analysis length: {len(analysis)}")
+        analysis_duration = time.time() - analysis_start_time
+        print(f"[ANALYSIS] Step 1/3 completed in {analysis_duration:.2f} seconds. Generated analysis length: {len(analysis)}")
         
         # Step 2: If files are provided, perform the two-step analysis for setup commands
         if files:
-            print(f"Starting step 1: Identifying configuration files for {repo_name}...")
+            # Step 2: Identify configuration files
+            print(f"[ANALYSIS] Step 2/3: Identifying configuration files for {repo_name}...")
+            config_start_time = time.time()
             config_files = await self.identify_config_files(repo_name, files)
-            print(f"Identified {len(config_files)} configuration files")
+            config_duration = time.time() - config_start_time
+            print(f"[ANALYSIS] Step 2/3 completed in {config_duration:.2f} seconds. Identified {len(config_files)} configuration files: {', '.join(config_files[:5])}" + ("..." if len(config_files) > 5 else ""))
             
-            print(f"Starting step 2: Extracting setup instructions from configuration files...")
+            # Step 3: Extract setup instructions
+            print(f"[ANALYSIS] Step 3/3: Extracting setup instructions from configuration files...")
+            setup_start_time = time.time()
             file_contents = {file_path: dependencies.get(file_path, "") for file_path in config_files if file_path in dependencies}
             
             if readme_content:
                 file_contents["README.md"] = readme_content
             
             setup_commands = await self.extract_setup_instructions(agent_id, repo_name, file_contents)
-            print(f"Extracted setup commands: {len(setup_commands)}")
+            setup_duration = time.time() - setup_start_time
+            print(f"[ANALYSIS] Step 3/3 completed in {setup_duration:.2f} seconds. Extracted setup commands for: {', '.join(setup_commands.keys())}")
+            
+            total_duration = time.time() - analysis_start_time
+            print(f"[ANALYSIS] Total analysis completed in {total_duration:.2f} seconds for {repo_name}")
             
             return {
                 "analysis": analysis,
                 "setup_commands": setup_commands
             }
         
+        print(f"[ANALYSIS] Analysis completed for {repo_name} (without setup commands)")
         return {
             "analysis": analysis
         }
@@ -288,7 +353,11 @@ class AzureAgentService:
             Analysis results as a string
         """
         try:
+            print(f"[ANALYSIS] Connecting to Azure AI Agents service...")
+            start_time = time.time()
+            
             async with AgentsClient(self.endpoint, self.credential) as client:
+                print(f"[ANALYSIS] Creating agent with ID: {agent_id}...")
                 agent_instructions = self._get_agent_instructions(agent_id)
                 agent = await client.create_agent(
                     project="agunblock",
@@ -297,45 +366,69 @@ class AzureAgentService:
                     instructions=agent_instructions,
                 )
                 
+                print(f"[ANALYSIS] Creating thread for analysis...")
                 thread = await client.create_thread()
                 
+                print(f"[ANALYSIS] Preparing repository content for analysis...")
                 content = f"Repository: {repo_name}\n\n"
                 content += "README:\n```\n" + (readme_content or "No README found") + "\n```\n\n"
                 
                 if dependencies:
-                    content += "Dependencies:\n"
+                    content += f"Dependencies ({len(dependencies)} files):\n"
                     for file_name, file_content in dependencies.items():
                         content += f"{file_name}:\n```\n{file_content}\n```\n\n"
                 
+                print(f"[ANALYSIS] Sending repository content to Azure AI Agents...")
                 await client.create_message(
                     thread.id,
                     content=content,
                     role="user"
                 )
                 
+                print(f"[ANALYSIS] Starting analysis run with agent: {agent_id}...")
                 run = await client.create_run(thread.id, agent.id)
                 
+                print(f"[ANALYSIS] Waiting for analysis to complete...")
                 status = None
+                last_status_time = time.time()
+                status_check_count = 0
+                
                 while status not in ["completed", "failed", "cancelled", "expired"]:
                     run = await client.get_run(thread.id, run.id)
                     status = run.status
+                    status_check_count += 1
+                    
+                    current_time = time.time()
+                    elapsed = current_time - start_time
+                    since_last_update = current_time - last_status_time
                     
                     if status == "completed":
+                        print(f"[ANALYSIS] Analysis completed after {elapsed:.2f} seconds")
                         break
                         
                     if status in ["failed", "cancelled", "expired"]:
+                        print(f"[ANALYSIS] Analysis failed with status: {status} after {elapsed:.2f} seconds")
                         raise RuntimeError(f"Agent run {status}")
+                    
+                    if since_last_update >= 10:
+                        print(f"[ANALYSIS] Still analyzing... (elapsed: {elapsed:.2f}s, status: {status})")
+                        last_status_time = current_time
                     
                     await asyncio.sleep(2)
                 
+                print(f"[ANALYSIS] Retrieving analysis results...")
                 messages = await client.list_messages(thread.id)
                 
                 assistant_messages = [message for message in messages if message.role == "assistant"]
                 if assistant_messages:
-                    return assistant_messages[-1].content
+                    result = assistant_messages[-1].content
+                    print(f"[ANALYSIS] Analysis completed successfully in {time.time() - start_time:.2f} seconds (result length: {len(result)} chars)")
+                    return result
                 
+                print(f"[ANALYSIS] No analysis results found after {time.time() - start_time:.2f} seconds")
                 raise RuntimeError("No analysis results found")
         except Exception as e:
+            print(f"[ANALYSIS] Error during analysis: {str(e)}")
             raise RuntimeError(f"Error connecting to Azure AI Agents: {str(e)}")
     
 
