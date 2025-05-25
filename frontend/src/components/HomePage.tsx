@@ -225,7 +225,7 @@ const HomePage: React.FC = () => {
               <div className="integration-icon">☁️</div>
               <h3>Azure Integration</h3>
               <p>
-                Deploy agents via Azure Marketplace or use Azure OpenAI for
+                Deploy agents via Azure Marketplace or use Azure AI Foundry for
                 custom implementations
               </p>
             </div>
@@ -262,7 +262,7 @@ const HomePage: React.FC = () => {
         <div className="footer-content">
           <p style={{ color: 'var(--text-secondary)' }}>
             © {new Date().getFullYear()} Microsoft Corporation. AGUnblock is an
-            open source project.
+            open source project, powered by Azure AI Foundry Agents Service.
           </p>
         </div>
       </footer>

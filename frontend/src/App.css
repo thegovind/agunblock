@@ -428,6 +428,9 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
   .agent-card::before {
     content: '';
@@ -511,6 +514,7 @@
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
+    margin-top: auto;
   }
   .agent-btn {
     flex: 1;
@@ -1275,8 +1279,8 @@
   }
   
   .effectiveness-indicator.low {
-    background: var(--primary);
-    opacity: 0.5;
+    background: #dc3545;
+    opacity: 1;
   }
 /* Fullscreen Modal Styles */
 .fullscreen-modal-overlay {

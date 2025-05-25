@@ -11,6 +11,53 @@ interface AgentCardProps {
   onAnalyzeClick?: (agentId: string, repoName: string) => void;
 }
 
+// Function to determine effectiveness level based on agent and use case
+const getEffectivenessLevel = (agentId: string, useCase: string, index: number): 'high' | 'medium' | 'low' => {
+  // Cross-repo support - most agents struggle with this
+  const lowerUseCase = useCase.toLowerCase();
+  if (lowerUseCase.includes('cross-repo') || lowerUseCase.includes('multi-repo') || lowerUseCase.includes('cross repo')) {
+    console.log(`Cross-repo detected for ${agentId}: "${useCase}"`);
+    if (agentId === 'devin') return 'medium'; // Devin has some cross-repo capabilities
+    return 'low'; // Most agents don't support cross-repo well
+  }
+
+  // GitHub Copilot Completions - best for real-time coding
+  if (agentId === 'github-copilot-completions') {
+    if (useCase.includes('boilerplate') || useCase.includes('repetitive') || useCase.includes('typos')) return 'high';
+    if (useCase.includes('multi-file') || useCase.includes('complex')) return 'medium';
+    return index < 2 ? 'high' : 'medium';
+  }
+  
+  // GitHub Copilot Agent - good for autonomous issue work
+  if (agentId === 'github-copilot-agent') {
+    if (useCase.includes('Low-to-medium') || useCase.includes('Bug fixes') || useCase.includes('test coverage')) return 'high';
+    if (useCase.includes('Documentation') || useCase.includes('technical debt')) return 'medium';
+    return index < 3 ? 'high' : 'medium';
+  }
+  
+  // Devin - excellent for complex development tasks
+  if (agentId === 'devin') {
+    if (useCase.includes('refactors') || useCase.includes('migrations') || useCase.includes('integrations') || useCase.includes('test coverage')) return 'high';
+    if (useCase.includes('PR reviews')) return 'medium';
+    return index < 2 ? 'high' : 'medium';
+  }
+  
+  // CLI tools - good for specific tasks, variable effectiveness
+  if (agentId === 'codex-cli') {
+    return index === 0 ? 'high' : index === 1 ? 'medium' : 'low';
+  }
+  
+  // SRE Agent - specialized for operations
+  if (agentId === 'sreagent') {
+    if (useCase.includes('monitoring') || useCase.includes('alerts')) return 'high';
+    if (useCase.includes('performance') || useCase.includes('automation')) return 'medium';
+    return 'medium';
+  }
+  
+  // Default fallback
+  return index < 2 ? 'high' : 'medium';
+};
+
 const AgentCard: React.FC<AgentCardProps> = ({ 
   agent, 
   showAnalyzeButton = false, 
@@ -58,7 +105,7 @@ const AgentCard: React.FC<AgentCardProps> = ({
                 <div key={index} className="comparison-table-row">
                   <div className="comparison-table-cell">{useCase}</div>
                   <div className="comparison-table-cell">
-                    <div className="effectiveness-indicator high"></div>
+                    <div className={`effectiveness-indicator ${getEffectivenessLevel(agent.id, useCase, index)}`}></div>
                   </div>
                 </div>
               ))}
@@ -77,8 +124,11 @@ const AgentCard: React.FC<AgentCardProps> = ({
           <li>How to use with {repoName}:</li>
           {agent.id === 'github-copilot-agent' && (
             <>
-              <li>Assign issues to Copilot Agent in your GitHub repository</li>
-              <li>Automate feature additions, bug fixes, refactoring, and more</li>
+              <li>Enable Copilot Agent in organization and repository settings</li>
+              <li>Create well-scoped issues with clear acceptance criteria</li>
+              <li>Assign issues to "Copilot" to trigger autonomous development</li>
+              <li>Monitor progress via session logs and PR updates</li>
+              <li>Review and iterate using PR comments</li>
             </>
           )}
           {agent.id === 'devin' && (
