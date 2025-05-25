@@ -14,7 +14,7 @@ For example:
 
 ## Featured AI Agents
 
-- **GitHub Copilot** - AI pair programmer for code suggestions
+- **GitHub Copilot** - AI pair programmer with real-time code suggestions, Next Edit Suggestions, and Agent Mode for multi-file editing
 - **Devin** - Autonomous AI software engineer
 - **Codex CLI** - Command-line interface for code generation
 - **SREAgent** - AI for Site Reliability Engineering

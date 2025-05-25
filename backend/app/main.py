@@ -3,12 +3,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 import json
 import asyncio
+import os
 from .models.schemas import RepositoryAnalysisRequest, RepositoryAnalysisResponse, RepositoryInfoResponse, AnalysisProgressUpdate
 from .services.github import GitHubService
 from .services.agent import AzureAgentService
 from .config import CORS_ORIGINS
+from .logging_config import setup_logging, get_api_logger
+
+# Set up logging
+log_level = os.getenv("LOG_LEVEL", "INFO")
+setup_logging(level=log_level, format_style="detailed")
+logger = get_api_logger()
 
 app = FastAPI(title="AGUnblock Backend", description="Backend API for AGUnblock")
+
+logger.info("Starting AGUnblock Backend API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,7 +35,22 @@ def get_agent_service():
 
 @app.get("/")
 async def root():
-    return {"message": "AGUnblock Backend API"}
+    logger.info("Root endpoint accessed")
+    return {"message": "AGUnblock Backend API", "status": "healthy"}
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring."""
+    try:
+        # Basic health check - could be extended to check dependencies
+        return {
+            "status": "healthy",
+            "service": "AGUnblock Backend",
+            "timestamp": "2025-01-27T08:00:00Z"
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
+        raise HTTPException(status_code=503, detail="Service unavailable")
 
 @app.post("/api/analyze", response_model=RepositoryAnalysisResponse)
 async def analyze_repository(
@@ -35,6 +59,7 @@ async def analyze_repository(
     agent_service: AzureAgentService = Depends(get_agent_service)
 ):
     try:
+        logger.info(f"Starting analysis for repository: {request.owner}/{request.repo} with agent: {request.agent_id}")
         print(f"Analyzing repository: {request.owner}/{request.repo} with agent: {request.agent_id}")
         
         repo_info = await github_service.get_repository_info(request.owner, request.repo)
@@ -67,6 +92,7 @@ async def analyze_repository(
         print(f"Analysis result length: {len(analysis)}")
         print(f"Setup commands found: {len(setup_commands)}")
         
+        logger.info(f"Analysis completed successfully for {request.owner}/{request.repo}")
         return RepositoryAnalysisResponse(
             agent_id=request.agent_id,
             repo_name=f"{request.owner}/{request.repo}",
@@ -74,6 +100,7 @@ async def analyze_repository(
             setup_commands=setup_commands
         )
     except Exception as e:
+        logger.error(f"Error analyzing repository {request.owner}/{request.repo}: {str(e)}", exc_info=True)
         print(f"Error analyzing repository: {str(e)}")
         return RepositoryAnalysisResponse(
             agent_id=request.agent_id,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Github, ExternalLink, Book, CheckCircle } from 'lucide-react';
+import { Github, ExternalLink, Book, CheckCircle, Star } from 'lucide-react';
 import logo from '../assets/logo.png';
 import agents from '../data/agents';
 import AgentCard from './AgentCard';
@@ -62,7 +62,6 @@ interface AnalysisResults {
 interface LoadingState {
   fetchingRepo: boolean;
   fetchingOrgInfo: boolean;
-  processingMetadata: boolean;
   analyzingAgents: boolean;
   completed: boolean;
 }
@@ -75,15 +74,40 @@ const RepoPage: React.FC = () => {
   const [loadingStates, setLoadingStates] = useState<LoadingState>({
     fetchingRepo: false,
     fetchingOrgInfo: false,
-    processingMetadata: false,
     analyzingAgents: false,
     completed: false
   });
   const [error, setError] = useState<string | null>(null);
-  const [analysisResults, setAnalysisResults] = useState<AnalysisResults | null>(null);
+  const [analysisResults, _setAnalysisResults] = useState<AnalysisResults | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [analysisModalOpen, setAnalysisModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<{id: string, name: string} | null>(null);
+  const [starCount, setStarCount] = useState<number | null>(null);
+
+  /* format star count */
+  const formatStarCount = (count: number): string => {
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}k`;
+    }
+    return count.toString();
+  };
+
+  /* fetch GitHub star count */
+  useEffect(() => {
+    const fetchStarCount = async () => {
+      try {
+        const response = await fetch('https://api.github.com/repos/microsoft/agunblock');
+        if (response.ok) {
+          const data = await response.json();
+          setStarCount(data.stargazers_count);
+        }
+      } catch (error) {
+        console.log('Failed to fetch star count:', error);
+      }
+    };
+
+    fetchStarCount();
+  }, []);
 
   /* fetch real repo data */
   useEffect(() => {
@@ -94,7 +118,6 @@ const RepoPage: React.FC = () => {
           setLoadingStates({
             fetchingRepo: true,
             fetchingOrgInfo: false,
-            processingMetadata: false,
             analyzingAgents: false,
             completed: false
           });
@@ -115,19 +138,19 @@ const RepoPage: React.FC = () => {
           if (response.ok) {
             const data = await response.json();
             
-            // Phase 2: Process organization info
+            // Phase 2: Process organization info and start analyzing agents
             setTimeout(() => {
               setLoadingStates(prev => ({
                 ...prev,
                 fetchingOrgInfo: false,
-                processingMetadata: true
+                analyzingAgents: true
               }));
             }, 600);
 
             const orgLogoUrl = `https://github.com/${org}.png`;
             const updatedAt = data.updated_at ? new Date(data.updated_at).toLocaleDateString() : undefined;
             
-            // Phase 3: Complete repo data loading and start analyzing agents
+            // Phase 3: Complete repo data loading and finish analysis
             setTimeout(() => {
               setRepoData({
                 org,
@@ -142,23 +165,14 @@ const RepoPage: React.FC = () => {
 
               setLoadingStates(prev => ({
                 ...prev,
-                processingMetadata: false,
-                analyzingAgents: true
+                analyzingAgents: false,
+                completed: true
               }));
 
-              // Phase 4: Complete analysis
               setTimeout(() => {
-                setLoadingStates(prev => ({
-                  ...prev,
-                  analyzingAgents: false,
-                  completed: true
-                }));
-
-                setTimeout(() => {
-                  setLoading(false);
-                }, 500);
-              }, 1000);
-            }, 400);
+                setLoading(false);
+              }, 500);
+            }, 1000);
 
           } else {
             setError('Repository not found or failed to fetch data');
@@ -177,7 +191,7 @@ const RepoPage: React.FC = () => {
     fetchRepoData();
   }, [org, repo]);
 
-  const openAnalysisModal = (agentId: string, repoName: string) => {
+  const openAnalysisModal = (agentId: string, _repoName: string) => {
     const agent = agents.find(a => a.id === agentId);
     if (agent) {
       setSelectedAgent({ id: agentId, name: agent.name });
@@ -185,50 +199,51 @@ const RepoPage: React.FC = () => {
     }
   };
 
-  const analyzeRepository = async (agentId: string, repoName: string) => {
-    setAnalysisResults({ 
-      agentId, 
-      repoName, 
-      analysis: '', 
-      isLoading: true,
-      setupCommands: undefined
-    });
-    setModalOpen(true);
+  // Legacy function - currently unused, kept for reference
+  // const analyzeRepository = async (agentId: string, repoName: string) => {
+  //   setAnalysisResults({ 
+  //     agentId, 
+  //     repoName, 
+  //     analysis: '', 
+  //     isLoading: true,
+  //     setupCommands: undefined
+  //   });
+  //   setModalOpen(true);
 
-    try {
-      const [owner, r] = repoName.split('/');
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  //   try {
+  //     const [owner, r] = repoName.split('/');
+  //     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       
-      console.log(`Starting analysis for ${repoName} with agent ${agentId}...`);
+  //     console.log(`Starting analysis for ${repoName} with agent ${agentId}...`);
       
-      const res = await fetch(`${apiUrl}/api/analyze`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ owner, repo: r, agent_id: agentId }),
-      });
+  //     const res = await fetch(`${apiUrl}/api/analyze`, {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ owner, repo: r, agent_id: agentId }),
+  //     });
       
-      const data = await res.json();
-      console.log(`Analysis completed for ${repoName}`);
+  //     const data = await res.json();
+  //     console.log(`Analysis completed for ${repoName}`);
       
-      setAnalysisResults({
-        agentId,
-        repoName,
-        analysis: data.error ? `Error: ${data.error}` : data.analysis,
-        isLoading: false,
-        setupCommands: data.setup_commands
-      });
-    } catch (err) {
-      console.error(`Error analyzing repository: ${err}`);
-      setAnalysisResults({
-        agentId,
-        repoName,
-        analysis: `Error analyzing repository: ${
-          err instanceof Error ? err.message : String(err)
-        }`,
-        isLoading: false,
-      });
-    }
-  };
+  //     setAnalysisResults({
+  //       agentId,
+  //       repoName,
+  //       analysis: data.error ? `Error: ${data.error}` : data.analysis,
+  //       isLoading: false,
+  //       setupCommands: data.setup_commands
+  //     });
+  //   } catch (err) {
+  //     console.error(`Error analyzing repository: ${err}`);
+  //     setAnalysisResults({
+  //       agentId,
+  //       repoName,
+  //       analysis: `Error analyzing repository: ${
+  //         err instanceof Error ? err.message : String(err)
+  //       }`,
+  //       isLoading: false,
+  //     });
+  //   }
+  // };
 
   /* reusable nav */
   const Nav = () => (
@@ -239,15 +254,18 @@ const RepoPage: React.FC = () => {
         </Link>
 
         <div className="nav-links">
-          <a href="/#agents">Agents</a>
+          <Link to="/">Home</Link>
           <a
             href="https://github.com/microsoft/agunblock"
             className="github-btn"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <i className="ms-Icon ms-Icon--GitGraph" />
-            <span>Explore on GitHub</span>
+            <div className="star-section">
+              <Star size={16} />
+              {starCount && <span className="star-count">{formatStarCount(starCount)}</span>}
+            </div>
+            <span>Star on GitHub</span>
           </a>
         </div>
       </div>
@@ -316,36 +334,10 @@ const RepoPage: React.FC = () => {
 
           <div className="loading-step">
             <div className="step-indicator">
-              {loadingStates.processingMetadata ? (
-                <div className="loading-spinner"></div>
-              ) : loadingStates.fetchingOrgInfo || loadingStates.fetchingRepo ? (
-                <div className="step-number">3</div>
-              ) : (
-                <CheckCircle size={20} style={{ color: 'var(--azure-green)' }} />
-              )}
-            </div>
-            <div className="step-content">
-              <div className="step-title">Processing Repository Metadata</div>
-              <div className="step-progress">
-                <div 
-                  className="progress-bar" 
-                  style={{ 
-                    width: (loadingStates.fetchingRepo || loadingStates.fetchingOrgInfo) ? '0%' : loadingStates.processingMetadata ? '100%' : '100%',
-                    backgroundColor: loadingStates.processingMetadata ? 'var(--azure-teal)' : (!loadingStates.fetchingRepo && !loadingStates.fetchingOrgInfo) ? 'var(--azure-green)' : 'transparent'
-                  }}
-                ></div>
-              </div>
-            </div>
-          </div>
-
-
-
-          <div className="loading-step">
-            <div className="step-indicator">
               {loadingStates.analyzingAgents ? (
                 <div className="loading-spinner"></div>
-              ) : (loadingStates.fetchingRepo || loadingStates.fetchingOrgInfo || loadingStates.processingMetadata) ? (
-                <div className="step-number">4</div>
+              ) : (loadingStates.fetchingOrgInfo || loadingStates.fetchingRepo) ? (
+                <div className="step-number">3</div>
               ) : (
                 <CheckCircle size={20} style={{ color: 'var(--azure-green)' }} />
               )}
@@ -356,7 +348,7 @@ const RepoPage: React.FC = () => {
                 <div 
                   className="progress-bar" 
                   style={{ 
-                    width: (loadingStates.fetchingRepo || loadingStates.fetchingOrgInfo || loadingStates.processingMetadata) ? '0%' : loadingStates.analyzingAgents ? '100%' : '100%',
+                    width: (loadingStates.fetchingRepo || loadingStates.fetchingOrgInfo) ? '0%' : loadingStates.analyzingAgents ? '100%' : '100%',
                     backgroundColor: loadingStates.analyzingAgents ? 'var(--azure-teal)' : loadingStates.completed ? 'var(--azure-green)' : 'transparent'
                   }}
                 ></div>
@@ -408,11 +400,7 @@ const RepoPage: React.FC = () => {
 
       {/* ---------- REPO HEADER ---------- */}
       <div className="repo-header">
-        <div className="repo-header-content">
-          <Link to="/" className="back-link">
-            <span>←</span> Back to Home
-          </Link>
-        </div>
+        <div style={{ height: '1rem' }}></div>
         
         {/* ---------- REPO INFO CARD IN HEADER ---------- */}
         <div className="repo-info-card-header">
@@ -514,6 +502,40 @@ const RepoPage: React.FC = () => {
         <p className="section-subtitle">
           Discover how to use these agents with {repoData!.fullName}
         </p>
+
+        {/* Experimental Notice */}
+        <div className="experimental-notice" style={{
+          background: 'linear-gradient(135deg, #0078d4 0%, #106ebe 100%)',
+          border: '1px solid #1890ff',
+          borderRadius: '8px',
+          padding: '1rem',
+          marginBottom: '2rem',
+          color: 'white'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: '4px',
+              padding: '0.25rem 0.5rem',
+              fontSize: '0.75rem',
+              fontWeight: 'bold'
+            }}>
+              EXPERIMENTAL
+            </div>
+            <span style={{ fontSize: '0.9rem', fontWeight: '600' }}>
+              Powered by Azure AI Foundry Agent Service
+            </span>
+          </div>
+          <p style={{ 
+            margin: 0, 
+            fontSize: '0.9rem', 
+            lineHeight: '1.4',
+            opacity: 0.95 
+          }}>
+            This AI agent analysis feature is currently experimental and under active development. 
+            <strong> Coming soon:</strong> Repository indexing and caching capabilities for faster analysis.
+          </p>
+        </div>
 
         {['async-swe', 'code-completion', 'cli', 'devops'].map((cat) => (
           <div key={cat} className="agent-category-group">
