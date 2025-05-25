@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from .models.schemas import RepositoryAnalysisRequest, RepositoryAnalysisResponse
+from .models.schemas import RepositoryAnalysisRequest, RepositoryAnalysisResponse, RepositoryInfoResponse
 from .services.github import GitHubService
 from .services.agent import AzureAgentService
 from .config import CORS_ORIGINS
@@ -67,3 +67,18 @@ async def analyze_repository(
             analysis=f"Error analyzing repository: {str(e)}",
             error=str(e)
         )
+
+@app.get("/api/repo-info/{owner}/{repo}", response_model=RepositoryInfoResponse)
+async def get_repository_info(
+    owner: str,
+    repo: str,
+    github_service: GitHubService = Depends(get_github_service)
+):
+    try:
+        repo_data = await github_service.get_repository_snapshot(owner, repo)
+        if not repo_data:
+            raise HTTPException(status_code=404, detail="Repository not found")
+        
+        return RepositoryInfoResponse(**repo_data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching repository info: {str(e)}")
