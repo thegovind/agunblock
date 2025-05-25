@@ -142,4 +142,11 @@ class GitHubService:
         except Exception as e:
             error_message = str(e)
             print(f"Error in get_repository_snapshot for {owner}/{repo}: {error_message}")
+            
+            # Add more detailed error information for debugging
+            if hasattr(e, 'response'):
+                print(f"Response status: {e.response.status_code}")
+                print(f"Response headers: {dict(e.response.headers)}")
+                print(f"Response body: {e.response.text}")
+            
             raise RuntimeError(f"Failed to fetch repository data: {error_message}")

@@ -93,6 +93,27 @@ cp .env.example .env
 uvicorn app.main:app --reload
 ```
 
+## 📋 Known Limitations & Roadmap
+
+### Current Limitations
+
+- **GitHub API Authentication**: Currently uses Personal Access Tokens (PAT) for GitHub API access, which has limitations including:
+  - Rate limiting constraints
+  - Token management complexity
+  - Security considerations for token storage and rotation
+  - Limited scope control compared to GitHub Apps
+
+### Coming Soon
+
+- **🔧 GitHub App Integration**: Replace PAT-based authentication with a proper GitHub App to provide:
+  - Better rate limiting
+  - Fine-grained permissions
+  - Improved security model
+  - No need for users to manage personal tokens
+- **📊 Enhanced Repository Analysis**: More comprehensive codebase analysis for better AI agent recommendations
+- **🔗 Additional AI Agent Integrations**: Support for more AI coding assistants and development tools
+- **📈 Usage Analytics**: Insights into AI agent effectiveness and usage patterns
+
 ## 🤝 Contributing
 
 We welcome contributions to AGUnblock! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started.
