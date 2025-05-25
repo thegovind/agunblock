@@ -11,7 +11,8 @@ from ..models.schemas import RepositoryFileInfo
 @lru_cache
 def gh() -> GitHub:
     if not GITHUB_TOKEN:
-        raise RuntimeError("GITHUB_TOKEN not set")
+        print("Warning: GITHUB_TOKEN not set, using anonymous client with rate limits")
+        return GitHub()  # Anonymous client with rate limits
     return GitHub(GITHUB_TOKEN)
 
 
