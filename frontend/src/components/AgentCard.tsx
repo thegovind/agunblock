@@ -117,27 +117,30 @@ const AgentCard: React.FC<AgentCardProps> = ({
       )}
 
       <div className="agent-actions">
-        <button 
-          className="agent-btn primary"
-          onClick={() => setSetupModalOpen(true)}
-        >
-          Setup Guide
-        </button>
-        <a 
-          href={agent.url} 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className="agent-btn secondary"
-        >
-          Get Started <ExternalLink size={16} />
-        </a>
-        {showAnalyzeButton && onAnalyzeClick && (
+        {showAnalyzeButton && onAnalyzeClick ? (
           <button
-            className="agent-btn secondary"
+            className="agent-btn primary"
             onClick={() => onAnalyzeClick(agent.id, repoName)}
           >
-            Analyze Repository
+            Analyze Repo for Configuration
           </button>
+        ) : (
+          <>
+            <button 
+              className="agent-btn primary"
+              onClick={() => setSetupModalOpen(true)}
+            >
+              Setup Guide
+            </button>
+            <a 
+              href={agent.url} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="agent-btn secondary"
+            >
+              Get Started <ExternalLink size={16} />
+            </a>
+          </>
         )}
       </div>
 
