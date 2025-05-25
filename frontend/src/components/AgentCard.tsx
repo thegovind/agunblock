@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ExternalLink } from 'lucide-react';
 import { Agent } from '../types/agent';
 import { getAgentLogo } from '../utils/agentUtils';
+import SetupModal from './ui/SetupModal';
 
 interface AgentCardProps {
   agent: Agent;
@@ -15,6 +17,8 @@ const AgentCard: React.FC<AgentCardProps> = ({
   repoName = '', 
   onAnalyzeClick 
 }) => {
+  const [setupModalOpen, setSetupModalOpen] = useState(false);
+
   return (
     <div className="agent-card" data-category={agent.category}>
       <div className="agent-header">
@@ -42,11 +46,32 @@ const AgentCard: React.FC<AgentCardProps> = ({
       <p className="agent-description">{agent.description}</p>
 
       {!showAnalyzeButton ? (
-        <ul className="agent-features">
-          {agent.strengths.map((s) => (
-            <li key={s}>{s}</li>
-          ))}
-        </ul>
+        <>
+          <div className="agent-comparison-table">
+            <h4 className="comparison-table-title">Where It Shines</h4>
+            <div className="comparison-table">
+              <div className="comparison-table-row header">
+                <div className="comparison-table-cell">Use Case</div>
+                <div className="comparison-table-cell">Effectiveness</div>
+              </div>
+              {agent.useCases && agent.useCases.slice(0, 4).map((useCase, index) => (
+                <div key={index} className="comparison-table-row">
+                  <div className="comparison-table-cell">{useCase}</div>
+                  <div className="comparison-table-cell">
+                    <div className="effectiveness-indicator high"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <ul className="agent-features">
+            <h4>Key Strengths</h4>
+            {agent.strengths.map((s) => (
+              <li key={s}>{s}</li>
+            ))}
+          </ul>
+        </>
       ) : (
         <ul className="agent-features">
           <li>How to use with {repoName}:</li>
@@ -92,16 +117,19 @@ const AgentCard: React.FC<AgentCardProps> = ({
       )}
 
       <div className="agent-actions">
+        <button 
+          className="agent-btn primary"
+          onClick={() => setSetupModalOpen(true)}
+        >
+          Setup Guide
+        </button>
         <a 
           href={agent.url} 
           target="_blank" 
           rel="noopener noreferrer" 
-          className="agent-btn primary"
+          className="agent-btn secondary"
         >
-          Get Started
-        </a>
-        <a href="#" className="agent-btn secondary">
-          Learn More
+          Get Started <ExternalLink size={16} />
         </a>
         {showAnalyzeButton && onAnalyzeClick && (
           <button
@@ -112,6 +140,12 @@ const AgentCard: React.FC<AgentCardProps> = ({
           </button>
         )}
       </div>
+
+      <SetupModal 
+        isOpen={setupModalOpen}
+        onClose={() => setSetupModalOpen(false)}
+        agent={agent}
+      />
     </div>
   );
 };

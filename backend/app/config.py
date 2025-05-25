@@ -12,4 +12,5 @@ GITHUB_API_URL = "https://api.github.com"
 CORS_ORIGINS = [
     "http://localhost:5173",  # Development frontend
     "https://agunblock.com",  # Production frontend
+    "*",  # Allow all origins for Azure Container Apps communication
 ]
