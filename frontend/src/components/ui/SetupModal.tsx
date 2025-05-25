@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Agent } from '../../types/agent';
+import logo from '../../assets/logo.png';
 
 interface SetupModalProps {
   isOpen: boolean;
@@ -8,6 +9,21 @@ interface SetupModalProps {
 }
 
 const SetupModal: React.FC<SetupModalProps> = ({ isOpen, onClose, agent }) => {
+  const handleEscapeKey = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      onClose();
+    }
+  }, [onClose]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscapeKey);
+      return () => {
+        document.removeEventListener('keydown', handleEscapeKey);
+      };
+    }
+  }, [isOpen, handleEscapeKey]);
+
   if (!isOpen) return null;
 
   const showDevinScreenshots = agent.id === 'devin';
@@ -17,10 +33,13 @@ const SetupModal: React.FC<SetupModalProps> = ({ isOpen, onClose, agent }) => {
       <div className="fullscreen-modal-container">
         <div className="fullscreen-modal-header">
           <div className="fullscreen-modal-logo">
-            <img src="/agunblock-logo.svg" alt="AGUnblock Logo" className="modal-logo" />
+            <img src={logo} alt="AGUnblock Logo" className="modal-logo" />
           </div>
           <h2 className="fullscreen-modal-title">Setup Guide: {agent.name}</h2>
-          <button className="fullscreen-modal-close" onClick={onClose}>×</button>
+          <div className="modal-close-section">
+            <span className="modal-close-tip">Press ESC to close</span>
+            <button className="fullscreen-modal-close" onClick={onClose}>×</button>
+          </div>
         </div>
         <div className="fullscreen-modal-content">
           <div className="setup-modal-content">

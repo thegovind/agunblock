@@ -1020,6 +1020,21 @@
   color: var(--text-primary);
 }
 
+.modal-close-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+}
+
+.modal-close-tip {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
 .fullscreen-modal-content {
   padding: 2rem;
   max-width: 900px;
