@@ -1,5 +1,6 @@
-fastapi==0.104.1
-uvicorn==0.23.2
-python-dotenv==1.0.0
-httpx==0.24.1
-azure-ai-agents==1.0.0
+fastapi
+uvicorn
+python-dotenv
+httpx
+azure-ai-agents
+githubkit
