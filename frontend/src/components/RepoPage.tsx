@@ -31,27 +31,39 @@ const RepoPage: React.FC = () => {
   const [analysisResults, setAnalysisResults] = useState<AnalysisResults | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  /* fetch mock repo data */
+  /* fetch real repo data */
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const fetchRepoData = async () => {
       if (org && repo) {
-        setRepoData({
-          org,
-          repo,
-          fullName: `${org}/${repo}`,
-          description:
-            'Repository information would be fetched from GitHub API in a production environment.',
-          language: 'JavaScript',
-          stars: 1024,
-        });
-        setLoading(false);
+        try {
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+          const response = await fetch(`${apiUrl}/api/repo-info/${org}/${repo}`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            setRepoData({
+              org,
+              repo,
+              fullName: data.full_name,
+              description: data.description,
+              language: data.language,
+              stars: data.stars,
+            });
+          } else {
+            setError('Repository not found or failed to fetch data');
+          }
+        } catch (err) {
+          setError(`Error fetching repository: ${err instanceof Error ? err.message : String(err)}`);
+        } finally {
+          setLoading(false);
+        }
       } else {
         setError('Invalid repository information');
         setLoading(false);
       }
-    }, 1000);
+    };
 
-    return () => clearTimeout(timer);
+    fetchRepoData();
   }, [org, repo]);
 
   const analyzeRepository = async (agentId: string, repoName: string) => {
