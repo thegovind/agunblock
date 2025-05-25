@@ -106,9 +106,9 @@ const HomePage: React.FC = () => {
       {/* ---------- HERO ---------- */}
       <section className="hero">
         <div className="hero-content">
-          <h1>Unlock SDLC Agents to turbocharge Your Development Workflow</h1>
+          <h1>Streamline Your Development with AI Agents for Every Stage</h1>
           <p className="hero-subtitle">
-            Configure your repo to be leveraged by different AI agents - so your SDLC lifecycle can be automated and you can focus on user needs.
+            Discover, configure, and integrate powerful AI agents into your development workflow. Automate repetitive tasks, accelerate coding, and focus on delivering value to your users.
           </p>
 
           <div className="repo-input-container">
@@ -143,7 +143,7 @@ const HomePage: React.FC = () => {
       <section className="categories" id="agents">
         <h2 className="section-title">AI Agents by Category</h2>
         <p className="section-subtitle">
-          Choose the right agent for your development needs
+          Find the perfect AI assistant for each stage of your development lifecycle
         </p>
 
         <div className="category-tabs">
@@ -182,7 +182,7 @@ const HomePage: React.FC = () => {
         <div className="integration-content">
           <h2 className="section-title">Microsoft Ecosystem Integration</h2>
           <p className="section-subtitle">
-            Seamlessly integrate AI agents into your Microsoft development stack
+            Leverage the full power of Microsoft's AI and cloud services for your development workflow
           </p>
 
           <div className="integration-grid">
