@@ -25,28 +25,339 @@ class AzureAgentService:
         """Initialize the Azure Agent Service with credentials."""
         self.endpoint = AZURE_AI_PROJECT_CONNECTION_STRING
         self.credential = None if not AZURE_AI_AGENTS_API_KEY or AZURE_AI_AGENTS_API_KEY == "your_api_key" else AzureKeyCredential(AZURE_AI_AGENTS_API_KEY)
-        
-    async def analyze_repository(self, agent_id: str, repo_name: str, readme_content: str, dependencies: Dict[str, str]) -> str:
+    
+    async def identify_config_files(self, repo_name: str, files: List[Dict[str, Any]]) -> List[str]:
         """
-        Analyze a repository using Azure AI Agents.
+        First step of the two-phase analysis: Identify configuration and dependency files.
+        
+        Args:
+            repo_name: The repository name in owner/repo format
+            files: List of files in the repository
+            
+        Returns:
+            List of file paths that are relevant for configuration
+        """
+        print(f"Identifying configuration files for {repo_name}...")
+        
+        if not self.credential or not self.endpoint or self.endpoint == "your_endpoint":
+            print("Using predefined list of configuration files")
+            common_config_files = [
+                "requirements.txt", "pyproject.toml", "setup.py", "Pipfile",  # Python
+                "package.json", "package-lock.json", "yarn.lock", "pnpm-lock.yaml",  # JavaScript/Node.js
+                "Gemfile", "Gemfile.lock",  # Ruby
+                "pom.xml", "build.gradle", "build.gradle.kts",  # Java/Kotlin
+                "Cargo.toml",  # Rust
+                "go.mod", "go.sum",  # Go
+                "composer.json", "composer.lock",  # PHP
+                "Dockerfile", "docker-compose.yml", "docker-compose.yaml",  # Docker
+                ".github/workflows", "azure-pipelines.yml",  # CI/CD
+                "README.md", "CONTRIBUTING.md", "INSTALL.md", "SETUP.md"  # Documentation
+            ]
+            
+            # Filter the list to only include files that exist in the repository
+            file_paths = [file["path"] for file in files]
+            config_files = []
+            
+            for config_file in common_config_files:
+                matching_files = [path for path in file_paths if path == config_file or path.endswith("/" + config_file) or (config_file.endswith("/") and any(path.startswith(config_file) for path in file_paths))]
+                config_files.extend(matching_files)
+            
+            return config_files[:10]  # Limit to 10 most important files
+        
+        try:
+            async with AgentsClient(self.endpoint, self.credential) as client:
+                agent_instructions = """
+                You are an AI assistant that helps identify configuration and dependency files in a GitHub repository.
+                Your task is to analyze the list of files in a repository and identify the most important files for understanding:
+                1. How to install dependencies
+                2. How to configure the development environment
+                3. How to run the application
+                4. How to run tests and linting
+                
+                Focus on files like:
+                - Package management files (requirements.txt, package.json, etc.)
+                - Configuration files (.env.example, docker-compose.yml, etc.)
+                - Documentation files (README.md, INSTALL.md, etc.)
+                - Build configuration files (Makefile, webpack.config.js, etc.)
+                
+                Return a list of file paths, with the most important files first.
+                """
+                
+                agent = await client.create_agent(
+                    project="agunblock",
+                    model="gpt-4",
+                    name="config-file-identifier",
+                    instructions=agent_instructions,
+                )
+                
+                thread = await client.create_thread()
+                
+                file_list = "\n".join([f"{file['path']} ({file['type']})" for file in files[:100]])  # Limit to first 100 files
+                
+                content = f"Repository: {repo_name}\n\n"
+                content += "Files in repository:\n```\n" + file_list + "\n```\n\n"
+                content += "Please identify the most important configuration and dependency files from this list."
+                
+                await client.create_message(
+                    thread.id,
+                    content=content,
+                    role="user"
+                )
+                
+                run = await client.create_run(thread.id, agent.id)
+                
+                status = None
+                while status not in ["completed", "failed", "cancelled", "expired"]:
+                    run = await client.get_run(thread.id, run.id)
+                    status = run.status
+                    
+                    if status == "completed":
+                        break
+                        
+                    if status in ["failed", "cancelled", "expired"]:
+                        print(f"Agent run {status}, using predefined list instead")
+                        return self._get_default_config_files(files)
+                    
+                    await asyncio.sleep(2)
+                
+                messages = await client.list_messages(thread.id)
+                
+                assistant_messages = [message for message in messages if message.role == "assistant"]
+                if assistant_messages:
+                    response = assistant_messages[-1].content
+                    import re
+                    file_paths = re.findall(r'`([^`]+)`|"([^"]+)"|\'([^\']+)\'', response)
+                    file_paths = [path[0] or path[1] or path[2] for path in file_paths if any(path)]
+                    
+                    # Filter to ensure they exist in the repository
+                    repo_files = [file["path"] for file in files]
+                    valid_files = [path for path in file_paths if path in repo_files]
+                    
+                    if valid_files:
+                        return valid_files[:10]  # Limit to 10 most important files
+                
+                return self._get_default_config_files(files)
+        except Exception as e:
+            print(f"Error identifying configuration files: {str(e)}")
+            return self._get_default_config_files(files)
+    
+    def _get_default_config_files(self, files: List[Dict[str, Any]]) -> List[str]:
+        """Get a default list of configuration files based on common patterns."""
+        common_config_files = [
+            "README.md", 
+            "requirements.txt", 
+            "package.json", 
+            "pyproject.toml", 
+            "Dockerfile", 
+            ".env.example",
+            "docker-compose.yml",
+            "Makefile",
+            "setup.py",
+            "CONTRIBUTING.md"
+        ]
+        
+        file_paths = [file["path"] for file in files]
+        return [path for path in file_paths if any(path.endswith("/" + config) or path == config for config in common_config_files)][:10]
+        
+    async def extract_setup_instructions(self, agent_id: str, repo_name: str, file_contents: Dict[str, str]) -> Dict[str, str]:
+        """
+        Second step of the two-phase analysis: Extract setup instructions from config files.
+        
+        Args:
+            agent_id: The type of AI agent ("github-copilot", "devin", etc.)
+            repo_name: The repository name in owner/repo format
+            file_contents: Dictionary mapping file paths to their contents
+            
+        Returns:
+            Dictionary of setup commands for Devin
+        """
+        print(f"Extracting setup instructions for {repo_name} with agent: {agent_id}...")
+        
+        if not self.credential or not self.endpoint or self.endpoint == "your_endpoint":
+            print("Using mock setup instructions")
+            return self._generate_mock_setup_instructions(repo_name, file_contents)
+        
+        try:
+            async with AgentsClient(self.endpoint, self.credential) as client:
+                agent_instructions = """
+                You are an AI assistant that helps extract setup instructions from repository configuration files.
+                Your task is to analyze the content of configuration files and extract commands for:
+                
+                1. Prerequisites: What software needs to be installed before working with this repo
+                2. Dependencies: How to install project dependencies
+                3. Run App: How to run the application locally
+                4. Linting: How to run linters or code quality checks
+                5. Testing: How to run tests
+                
+                Format your response as a JSON object with these keys:
+                {
+                    "prerequisites": "Commands to install prerequisites",
+                    "dependencies": "Commands to install dependencies",
+                    "run_app": "Commands to run the app",
+                    "linting": "Commands to run linters",
+                    "testing": "Commands to run tests"
+                }
+                
+                Be specific and provide exact commands that would work in a terminal.
+                """
+                
+                agent = await client.create_agent(
+                    project="agunblock",
+                    model="gpt-4",
+                    name="setup-instruction-extractor",
+                    instructions=agent_instructions,
+                )
+                
+                thread = await client.create_thread()
+                
+                content = f"Repository: {repo_name}\n\n"
+                content += "Configuration Files:\n\n"
+                
+                for file_path, file_content in file_contents.items():
+                    content += f"File: {file_path}\n```\n{file_content[:5000]}\n```\n\n"  # Limit file content to 5000 chars
+                
+                content += "Please extract setup instructions from these files in the format specified."
+                
+                await client.create_message(
+                    thread.id,
+                    content=content,
+                    role="user"
+                )
+                
+                run = await client.create_run(thread.id, agent.id)
+                
+                status = None
+                while status not in ["completed", "failed", "cancelled", "expired"]:
+                    run = await client.get_run(thread.id, run.id)
+                    status = run.status
+                    
+                    if status == "completed":
+                        break
+                        
+                    if status in ["failed", "cancelled", "expired"]:
+                        print(f"Agent run {status}, using mock setup instructions instead")
+                        return self._generate_mock_setup_instructions(repo_name, file_contents)
+                    
+                    await asyncio.sleep(2)
+                
+                messages = await client.list_messages(thread.id)
+                
+                assistant_messages = [message for message in messages if message.role == "assistant"]
+                if assistant_messages:
+                    response = assistant_messages[-1].content
+                    
+                    import json
+                    import re
+                    
+                    json_match = re.search(r'```json\s*(.*?)\s*```', response, re.DOTALL)
+                    if json_match:
+                        json_str = json_match.group(1)
+                    else:
+                        json_match = re.search(r'(\{.*\})', response, re.DOTALL)
+                        if json_match:
+                            json_str = json_match.group(1)
+                        else:
+                            json_str = response
+                    
+                    try:
+                        setup_instructions = json.loads(json_str)
+                        return setup_instructions
+                    except json.JSONDecodeError:
+                        print("Failed to parse JSON from response")
+                
+                return self._generate_mock_setup_instructions(repo_name, file_contents)
+        except Exception as e:
+            print(f"Error extracting setup instructions: {str(e)}")
+            return self._generate_mock_setup_instructions(repo_name, file_contents)
+    
+    def _generate_mock_setup_instructions(self, repo_name: str, file_contents: Dict[str, str]) -> Dict[str, str]:
+        """Generate mock setup instructions based on file contents."""
+        setup_instructions = {
+            "prerequisites": "",
+            "dependencies": "",
+            "run_app": "",
+            "linting": "",
+            "testing": ""
+        }
+        
+        if any(path.endswith(".py") for path in file_contents.keys()) or "requirements.txt" in file_contents:
+            setup_instructions["prerequisites"] = "Python 3.8+ required\npip install -U pip"
+            setup_instructions["dependencies"] = "pip install -r requirements.txt"
+            setup_instructions["run_app"] = "python app.py"
+            setup_instructions["linting"] = "flake8 ."
+            setup_instructions["testing"] = "pytest"
+        
+        if "package.json" in file_contents:
+            package_json = file_contents.get("package.json", "{}")
+            if "pnpm-lock.yaml" in file_contents:
+                setup_instructions["prerequisites"] = "Node.js 16+ required\nnpm install -g pnpm"
+                setup_instructions["dependencies"] = "pnpm install"
+            elif "yarn.lock" in file_contents:
+                setup_instructions["prerequisites"] = "Node.js 16+ required\nnpm install -g yarn"
+                setup_instructions["dependencies"] = "yarn install"
+            else:
+                setup_instructions["prerequisites"] = "Node.js 16+ required"
+                setup_instructions["dependencies"] = "npm install"
+            
+            if "react" in package_json:
+                setup_instructions["run_app"] = "npm start"
+            elif "next" in package_json:
+                setup_instructions["run_app"] = "npm run dev"
+            else:
+                setup_instructions["run_app"] = "npm start"
+            
+            setup_instructions["linting"] = "npm run lint"
+            setup_instructions["testing"] = "npm test"
+        
+        if "Dockerfile" in file_contents or "docker-compose.yml" in file_contents:
+            setup_instructions["prerequisites"] = "Docker and Docker Compose required"
+            setup_instructions["dependencies"] = "docker-compose build"
+            setup_instructions["run_app"] = "docker-compose up"
+        
+        return setup_instructions
+            
+    async def analyze_repository(self, agent_id: str, repo_name: str, readme_content: str, dependencies: Dict[str, str], files: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+        """
+        Analyze a repository using Azure AI Agents with a two-step process.
         
         Args:
             agent_id: The type of AI agent ("github-copilot", "devin", etc.)
             repo_name: The repository name in owner/repo format
             readme_content: The README content of the repository
             dependencies: Dictionary of dependency files and their contents
-        
+            files: List of files in the repository (optional)
+            
         Returns:
-            Analysis results as a string
+            Dictionary with analysis results and setup commands
         """
         print(f"Analyzing repository: {repo_name} with agent: {agent_id}")
         print(f"Endpoint: {self.endpoint}, Credential: {self.credential is not None}")
         
         if True or not self.credential or not self.endpoint or self.endpoint == "your_endpoint":
             print(f"Using mock data for {agent_id} and {repo_name}")
-            mock_analysis = self._generate_mock_analysis(agent_id, repo_name, readme_content, dependencies)
-            print(f"Generated mock analysis length: {len(mock_analysis)}")
-            return mock_analysis
+            analysis = self._generate_mock_analysis(agent_id, repo_name, readme_content, dependencies)
+            print(f"Generated mock analysis length: {len(analysis)}")
+            
+            if files:
+                config_files = await self.identify_config_files(repo_name, files)
+                print(f"Identified {len(config_files)} configuration files")
+                
+                file_contents = {file_path: dependencies.get(file_path, "") for file_path in config_files if file_path in dependencies}
+                
+                if readme_content:
+                    file_contents["README.md"] = readme_content
+                
+                setup_commands = await self.extract_setup_instructions(agent_id, repo_name, file_contents)
+                print(f"Extracted setup commands: {len(setup_commands)}")
+                
+                return {
+                    "analysis": analysis,
+                    "setup_commands": setup_commands
+                }
+            
+            return {
+                "analysis": analysis
+            }
             
         try:
             async with AgentsClient(self.endpoint, self.credential) as client:

@@ -45,19 +45,30 @@ async def analyze_repository(
         dependencies = await github_service.get_requirements(request.owner, request.repo)
         print(f"Dependencies found: {len(dependencies)}")
         
-        analysis = await agent_service.analyze_repository(
+        files = await github_service.get_repository_files(request.owner, request.repo)
+        print(f"Repository files found: {len(files)}")
+        
+        files_dict = [{"path": file.path, "type": file.type, "size": file.size} for file in files]
+        
+        analysis_result = await agent_service.analyze_repository(
             request.agent_id,
             f"{request.owner}/{request.repo}",
             readme_content or "No README found",  # Provide default if None
-            dependencies or {}  # Provide empty dict if None
+            dependencies or {},  # Provide empty dict if None
+            files_dict
         )
         
+        analysis = analysis_result.get("analysis", "")
+        setup_commands = analysis_result.get("setup_commands", {})
+        
         print(f"Analysis result length: {len(analysis)}")
+        print(f"Setup commands found: {len(setup_commands)}")
         
         return RepositoryAnalysisResponse(
             agent_id=request.agent_id,
             repo_name=f"{request.owner}/{request.repo}",
-            analysis=analysis
+            analysis=analysis,
+            setup_commands=setup_commands
         )
     except Exception as e:
         print(f"Error analyzing repository: {str(e)}")
