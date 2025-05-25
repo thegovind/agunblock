@@ -103,7 +103,8 @@ class GitHubService:
         try:
             print(f"Fetching repository data for {owner}/{repo}...")
             
-            print(f"Creating GitHub client with token: {GITHUB_TOKEN[:5]}...")
+            token_preview = GITHUB_TOKEN[:5] if GITHUB_TOKEN else "None"
+            print(f"Creating GitHub client with token: {token_preview}...")
             client = gh()
             
             meta = client.rest.repos.get(owner=owner, repo=repo).parsed_data
