@@ -935,4 +935,125 @@
     background: var(--primary);
     opacity: 0.5;
   }
+/* Fullscreen Modal Styles */
+.fullscreen-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1100;
+  backdrop-filter: blur(8px);
+  overflow-y: auto;
+}
+
+.fullscreen-modal-container {
+  background: var(--bg-dark);
+  width: 100%;
+  min-height: 100vh;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  border-top: 4px solid var(--azure-teal);
+  animation: fullscreenModalSlideUp 0.4s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes fullscreenModalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fullscreen-modal-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: var(--bg-dark);
+  z-index: 10;
+}
+
+.fullscreen-modal-logo {
+  position: absolute;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.modal-logo {
+  height: 40px;
+  width: auto;
+}
+
+.fullscreen-modal-title {
+  font-size: 1.75rem;
+  color: var(--text-primary);
+  margin: 0;
+  margin-top: 3rem;
+  text-align: center;
+  width: 100%;
+}
+
+.fullscreen-modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.75rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s ease;
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+}
+
+.fullscreen-modal-close:hover {
+  color: var(--text-primary);
+}
+
+.fullscreen-modal-content {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Setup Screenshots Styles */
+.setup-step-screenshots {
+  margin: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.screenshot-container {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.5rem;
+}
+
+.setup-screenshot {
+  width: 100%;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.screenshot-caption {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+  font-style: italic;
+}
   
