@@ -75,10 +75,18 @@ async def get_repository_info(
     github_service: GitHubService = Depends(get_github_service)
 ):
     try:
+        print(f"Fetching repository data for {owner}/{repo}...")
         repo_data = await github_service.get_repository_snapshot(owner, repo)
         if not repo_data:
+            print(f"Repository not found: {owner}/{repo}")
             raise HTTPException(status_code=404, detail="Repository not found")
         
         return RepositoryInfoResponse(**repo_data)
+    except RuntimeError as e:
+        error_msg = f"Error fetching repository info: {str(e)}"
+        print(error_msg)
+        raise HTTPException(status_code=500, detail=error_msg)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching repository info: {str(e)}")
+        error_msg = f"Unexpected error: {str(e)}"
+        print(error_msg)
+        raise HTTPException(status_code=500, detail=error_msg)

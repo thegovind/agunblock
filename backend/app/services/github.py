@@ -101,21 +101,34 @@ class GitHubService:
             Repository information as a dictionary or None if not found
         """
         try:
-            meta = gh().rest.repos.get(owner=owner, repo=repo).parsed_data
+            print(f"Fetching repository data for {owner}/{repo}...")
+            
+            print(f"Creating GitHub client with token: {GITHUB_TOKEN[:5]}...")
+            client = gh()
+            
+            meta = client.rest.repos.get(owner=owner, repo=repo).parsed_data
+            print(f"Repository metadata fetched successfully")
             
             readme = ""
             try:
-                readme_response = gh().rest.repos.get_readme(owner=owner, repo=repo).parsed_data
+                readme_response = client.rest.repos.get_readme(owner=owner, repo=repo).parsed_data
                 readme = base64.b64decode(readme_response.content).decode()
-            except Exception:
+                print(f"README content fetched successfully")
+            except Exception as e:
+                print(f"Error fetching README: {str(e)}")
                 readme = ""
             
+            primary_language = "Unknown"
             try:
-                languages_response = gh().rest.repos.list_languages(owner=owner, repo=repo).parsed_data
+                languages_response = client.rest.repos.list_languages(owner=owner, repo=repo).parsed_data
                 languages_dict = dict(languages_response)
-                primary_language = max(languages_dict.items(), key=lambda x: x[1])[0] if languages_dict else "Unknown"
-            except Exception:
-                primary_language = "Unknown"
+                if languages_dict:
+                    primary_language = max(languages_dict.items(), key=lambda x: x[1])[0]
+                    print(f"Primary language detected: {primary_language}")
+                else:
+                    print("No language information available")
+            except Exception as e:
+                print(f"Error fetching languages: {str(e)}")
             
             return {
                 "full_name": meta.full_name,
@@ -125,5 +138,7 @@ class GitHubService:
                 "default_branch": meta.default_branch,
                 "readme": readme,
             }
-        except Exception:
-            return None
+        except Exception as e:
+            error_message = str(e)
+            print(f"Error in get_repository_snapshot for {owner}/{repo}: {error_message}")
+            raise RuntimeError(f"Failed to fetch repository data: {error_message}")
