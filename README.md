@@ -1,7 +1,7 @@
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/microsoft/agunblock/main/.github/assets/logo.png" alt="Snippy logo" width="150"><br>
-  <b>AGUnblock - Setup Utility to Unlock AI Agents for Your Development Workflow</b>
+  <img src="https://raw.githubusercontent.com/microsoft/agunblock/main/.github/assets/logo.png" alt="AGUnblock logo" width="200"><br>
+  <b>Setup Utility to Unlock AI Agents for Your Development Workflow</b>
 </p>
 
 
