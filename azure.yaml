@@ -6,13 +6,10 @@ metadata:
 services:
   web:                     # ---------- FRONTEND ----------
     project: ./frontend
-    host: staticwebapp     # tells azd to use Azure Static Web Apps
-    hooks:
-      prepackage:
-        shell: pwsh
-        run: |
-          pnpm install --frozen-lockfile
-          pnpm run build
+    language: docker
+    host: containerapp     # azd will deploy the container built from Dockerfile
+    docker:
+      registry: ${AZURE_CONTAINER_REGISTRY_ENDPOINT}
 
   api:                     # ---------- BACKEND ----------
     project: ./backend

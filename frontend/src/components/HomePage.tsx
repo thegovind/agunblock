@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import { Star } from 'lucide-react';
 import { AgentCategory } from '../types/agent';
 import agents from '../data/agents';
 import AgentCard from './AgentCard';
@@ -9,6 +10,7 @@ import logo from '../assets/logo.png';
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [repoInput, setRepoInput] = useState('');
+  const [starCount, setStarCount] = useState<number | null>(null);
 
   const analyzeRepo = () => {
     const value = repoInput.trim();
@@ -39,10 +41,35 @@ const HomePage: React.FC = () => {
   };
 
   const [activeCategory, setActiveCategory] =
-    useState<AgentCategory>('all');
+    useState<AgentCategory>('async-swe');
   const filteredAgents = agents.filter(
     (a) => activeCategory === 'all' || a.category === activeCategory
   );
+
+  /* format star count */
+  const formatStarCount = (count: number): string => {
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}k`;
+    }
+    return count.toString();
+  };
+
+  /* fetch GitHub star count */
+  useEffect(() => {
+    const fetchStarCount = async () => {
+      try {
+        const response = await fetch('https://api.github.com/repos/microsoft/agunblock');
+        if (response.ok) {
+          const data = await response.json();
+          setStarCount(data.stargazers_count);
+        }
+      } catch (error) {
+        console.log('Failed to fetch star count:', error);
+      }
+    };
+
+    fetchStarCount();
+  }, []);
 
   /* smooth-scroll + nav shadow */
   useEffect(() => {
@@ -90,14 +117,18 @@ const HomePage: React.FC = () => {
 
           <div className="nav-links">
             <a href="#agents">Agents</a>
+            <a href="#integration">Ecosystem</a>
             <a
               href="https://github.com/microsoft/agunblock"
               className="github-btn"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <i className="ms-Icon ms-Icon--GitGraph" />
-              <span>Explore on GitHub</span>
+              <div className="star-section">
+                <Star size={16} />
+                {starCount && <span className="star-count">{formatStarCount(starCount)}</span>}
+              </div>
+              <span>Star on GitHub</span>
             </a>
           </div>
         </div>
@@ -106,74 +137,78 @@ const HomePage: React.FC = () => {
       {/* ---------- HERO ---------- */}
       <section className="hero">
         <div className="hero-content">
-          <h1>Unlock SDLC Agents to turbocharge Your Development Workflow</h1>
-          <p className="hero-subtitle">
-            Configure your repo to be leveraged by different AI agents - so your SDLC lifecycle can be automated and you can focus on user needs.
-          </p>
+          <h1 className="hero-title">Streamline Your Development with AI Agents</h1>
+          
+          <div className="hero-input-section">
+            <div className="repo-input-container-hero">
+              <input
+                type="text"
+                className="repo-input-hero"
+                placeholder="Enter GitHub repo URL or owner/repo"
+                value={repoInput}
+                onChange={(e) => setRepoInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+              />
+              <button className="analyze-btn-hero" onClick={analyzeRepo}>
+                Analyze Repository
+              </button>
+            </div>
 
-          <div className="repo-input-container">
-            <input
-              type="text"
-              className="repo-input"
-              placeholder="Enter GitHub repo URL or owner/repo"
-              value={repoInput}
-              onChange={(e) => setRepoInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-            <button className="analyze-btn" onClick={analyzeRepo}>
-              Analyze
-            </button>
+            <div className="hero-try-section">
+              <span className="hero-try-label">Try:</span>
+              <button
+                className="hero-try-example-btn"
+                onClick={() => setRepoInput('Azure-Samples/snippy')}
+              >
+                Azure-Samples/snippy
+              </button>
+              <span className="hero-try-or">or paste any GitHub URL</span>
+            </div>
           </div>
 
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            Try:&nbsp;
-            <a
-              href="#"
-              style={{ color: 'var(--azure-teal)', textDecoration: 'none', cursor: 'pointer' }}
-              onClick={e => { e.preventDefault(); setRepoInput('Azure-Samples/snippy'); }}
-            >
-              Azure-Samples/snippy
-            </a>{' '}
-            or paste any GitHub URL
+          <p className="hero-description">
+            Discover, configure, and integrate powerful AI agents into your development workflow.
           </p>
         </div>
       </section>
 
       {/* ---------- AGENT CATEGORIES ---------- */}
       <section className="categories" id="agents">
-        <h2 className="section-title">AI Agents by Category</h2>
-        <p className="section-subtitle">
-          Choose the right agent for your development needs
-        </p>
+        <div className="categories-content">
+          <h2 className="section-title">AI Agents by Category</h2>
+          <p className="section-subtitle">
+            Find the perfect AI assistant for each stage of your development lifecycle
+          </p>
 
-        <div className="category-tabs">
-          {(['all', 'code-completion', 'async-swe', 'cli', 'devops'] as const).map(
-            (cat) => (
-              <div
-                key={cat}
-                className={`category-tab ${
-                  activeCategory === cat ? 'active' : ''
-                }`}
-                onClick={() => setActiveCategory(cat)}
-              >
-                {cat === 'all'
-                  ? 'All Agents'
-                  : cat === 'code-completion'
-                  ? 'Code Completion Agent'
-                  : cat === 'async-swe'
-                  ? 'Async SWE Agent'
-                  : cat === 'cli'
-                  ? 'CLI-based Sync Agent'
-                  : 'DevOps Agent'}
-              </div>
-            )
-          )}
-        </div>
+          <div className="category-tabs">
+            {(['all', 'code-completion', 'async-swe', 'cli', 'devops'] as const).map(
+              (cat) => (
+                <div
+                  key={cat}
+                  className={`category-tab ${
+                    activeCategory === cat ? 'active' : ''
+                  }`}
+                  onClick={() => setActiveCategory(cat)}
+                >
+                  {cat === 'all'
+                    ? 'All Agents'
+                    : cat === 'code-completion'
+                    ? 'Code Completion Agent'
+                    : cat === 'async-swe'
+                    ? 'Async SWE Agent'
+                    : cat === 'cli'
+                    ? 'CLI-based Sync Agent'
+                    : 'DevOps Agent'}
+                </div>
+              )
+            )}
+          </div>
 
-        <div className="agents-grid">
-          {filteredAgents.map((agent) => (
-            <AgentCard key={agent.id} agent={agent} />
-          ))}
+          <div className="agents-grid">
+            {filteredAgents.map((agent) => (
+              <AgentCard key={agent.id} agent={agent} />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -182,7 +217,7 @@ const HomePage: React.FC = () => {
         <div className="integration-content">
           <h2 className="section-title">Microsoft Ecosystem Integration</h2>
           <p className="section-subtitle">
-            Seamlessly integrate AI agents into your Microsoft development stack
+            Leverage the full power of Microsoft's AI and cloud services for your development workflow
           </p>
 
           <div className="integration-grid">

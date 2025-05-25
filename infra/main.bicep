@@ -8,35 +8,68 @@ param envName string
 var namePrefix = toLower('agunblock-${envName}')
 var acrName = toLower('acr${replace(envName, '-', '')}')
 
-// -------- Static Web App --------------------------------------------------
-resource static 'Microsoft.Web/staticSites@2023-01-01' = {
-  name: '${namePrefix}-swa'
+// -------- Frontend Container App ------------------------------------------
+resource web 'Microsoft.App/containerApps@2025-02-02-preview' = {
+  name: '${namePrefix}-web'
   location: location
   tags: {
     'azd-service-name': 'web'
   }
-  sku: {
-    name: 'Standard'
-  }
+  dependsOn: [
+    api  // Ensure API is created first so we can reference its URL
+  ]
   properties: {
-    repositoryUrl: 'https://github.com/microsoft/agunblock'
-    branch: 'main'
-    buildProperties: {
-      appLocation: '/frontend'
-      outputLocation: 'dist'
+    managedEnvironmentId: env.id
+    configuration: {
+      ingress: {
+        external: true
+        targetPort: 80
+      }
+      registries: [
+        {
+          server: acr.properties.loginServer
+          username: acr.listCredentials().username
+          passwordSecretRef: 'registry-password-web'
+        }
+      ]
+      secrets: [
+        {
+          name: 'registry-password-web'
+          value: acr.listCredentials().passwords[0].value
+        }
+      ]
+    }
+    template: {
+      containers: [
+        {
+          name: 'web'
+          image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
+          resources: {
+            cpu: '0.25'
+            memory: '0.5Gi'
+          }
+          env: [
+            {
+              name: 'VITE_API_URL'
+              value: 'https://${api.properties.configuration.ingress.fqdn}'
+            }
+          ]
+        }
+      ]
     }
   }
 }
 
 // -------- Container Registry ----------------------------------------------
-resource acr 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' = {
+resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: acrName
   location: location
   sku: {
-    name: 'Basic'
+    name: 'Standard'
   }
   properties: {
     adminUserEnabled: true
+    publicNetworkAccess: 'Enabled'
   }
 }
 
@@ -84,6 +117,7 @@ resource api 'Microsoft.App/containerApps@2025-02-02-preview' = {
             cpu: '0.5'
             memory: '1Gi'
           }
+
         }
       ]
     }
@@ -91,7 +125,7 @@ resource api 'Microsoft.App/containerApps@2025-02-02-preview' = {
 }
 
 // -------- Outputs ----------------------------------------------------------
-output staticWebAppHostname string = static.properties.defaultHostname
+output webAppUrl string = 'https://${web.properties.configuration.ingress.fqdn}'
 output apiUrl string = 'https://${api.properties.configuration.ingress.fqdn}'
 output containerRegistryLoginServer string = acr.properties.loginServer
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = acr.properties.loginServer
