@@ -1,23 +1,26 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
-
+# azure.yaml — Azure Developer CLI manifest
 name: agunblock
 metadata:
   template: agunblock@1.0.0
-services:
-  api:
-    project: ./src/
-    language: python
-    host: function
 
-hooks:
-  postprovision:
-    windows:
-      shell: pwsh
-      run: ./scripts/generate-settings.ps1
-      interactive: true
-      continueOnError: false
-    posix:
-      shell: sh
-      run: ./scripts/generate-settings.sh
-      interactive: true
-      continueOnError: false
+services:
+  web:                     # ---------- FRONTEND ----------
+    project: ./frontend
+    host: staticwebapp     # tells azd to use Azure Static Web Apps
+    hooks:
+      prepackage:
+        shell: pwsh
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+  api:                     # ---------- BACKEND ----------
+    project: ./backend
+    language: python
+    host: containerapp     # azd will deploy the container built from Dockerfile
+    docker:
+      registry: ${AZURE_CONTAINER_REGISTRY_ENDPOINT}
+
+# Optional: generate a ready-made GitHub Actions pipeline at `azd pipeline config`
+pipeline:
+  provider: github

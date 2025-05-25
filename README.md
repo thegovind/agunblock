@@ -1,6 +1,12 @@
-# AGUnblock - Unlock AI Agents for Your Development Workflow
 
-AGUnblock is an open-source utility under Microsoft that helps developers leverage AI agents for their Software Development Life Cycle (SDLC). This platform provides a centralized hub for discovering, configuring, and integrating various AI coding agents into your development workflow.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/microsoft/agunblock/main/.github/assets/logo.png" alt="Snippy logo" width="150"><br>
+  <b>AGUnblock - Setup Utility to Unlock AI Agents for Your Development Workflow</b>
+</p>
+
+
+AGUnblock is an open-source utility that helps developers leverage AI agents for their Software Development Life Cycle (SDLC) through Azure. This platform provides a centralized hub for discovering, configuring, and integrating various AI coding agents into your development workflow, with a focus on setting up and connecting different AI agents to Azure services. It streamlines the process of getting started with AI-powered development tools by providing automated setup assistance and Azure integration guidance.
+
 
 > [!CAUTION]
 > AGUnblock is currently under active development. Features and documentation are being added regularly. Feel free to star and watch the repository for updates!

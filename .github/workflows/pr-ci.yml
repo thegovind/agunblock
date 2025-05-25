@@ -1,0 +1,49 @@
+name: CI (PR checks)
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ---------- Frontend ----------
+      - name: Set up PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Run eslint
+        working-directory: frontend
+        run: pnpm run lint
+
+      - name: Build Vite app (prod)
+        working-directory: frontend
+        run: pnpm run build
+
+      # ---------- Backend ----------
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend deps
+        working-directory: backend
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build backend Docker image
+        working-directory: backend
+        run: docker build -t backend-test:pr-${{ github.sha }} .
+
+      - name: Smoke-test uvicorn
+        run: docker run --rm backend-test:pr-${{ github.sha }} uvicorn --help
