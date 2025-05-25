@@ -771,6 +771,83 @@
     backdrop-filter: blur(10px);
     box-shadow: 0 8px 32px rgba(0,0,0,0.12);
   }
+  
+  /* Enhanced repo card styles */
+  .repo-card-flex {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+  }
+  
+  .repo-org-logo {
+    flex-shrink: 0;
+  }
+  
+  .org-logo-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  .repo-card-details {
+    flex: 1;
+  }
+  
+  .repo-name {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+  }
+  
+  .repo-full-path {
+    margin-bottom: 1rem;
+  }
+  
+  .repo-full-path a {
+    color: var(--azure-teal);
+    text-decoration: none;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .repo-full-path a:hover {
+    text-decoration: underline;
+  }
+  
+  .repo-actions {
+    margin-top: 1.5rem;
+  }
+  
+  .github-link-button {
+    display: inline-flex;
+    align-items: center;
+    background: var(--primary);
+    color: #fff;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .github-link-button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,120,212,0.3);
+  }
+  
+  .language-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
   .repo-description {
     color: var(--text-secondary);
     font-size: 1.1rem;
