@@ -20,6 +20,13 @@ interface AnalysisResults {
   repoName: string;
   analysis: string;
   isLoading: boolean;
+  setupCommands?: {
+    prerequisites: string;
+    dependencies: string;
+    run_app: string;
+    linting: string;
+    testing: string;
+  };
 }
 
 const RepoPage: React.FC = () => {
