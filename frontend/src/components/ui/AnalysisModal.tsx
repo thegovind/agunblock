@@ -216,7 +216,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
       <div className="modal-container" style={{ maxWidth: results ? '90vw' : '800px', width: results ? '90vw' : 'auto' }}>
         <div className="modal-header">
           <h2 className="modal-title">
-            {agentName} Analysis for {repoName}
+            Setup {repoName} for {agentName}
           </h2>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
@@ -533,6 +533,163 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
                   Successfully analyzed <strong>{repoName}</strong> for <strong>{agentName}</strong> in {getElapsedTime()}
                 </p>
               </div>
+
+              {agentId === 'devin' && (
+                <div style={{ 
+                  background: 'linear-gradient(135deg, rgba(0, 120, 212, 0.05) 0%, rgba(130, 87, 229, 0.05) 100%)',
+                  border: '1px solid rgba(0, 120, 212, 0.2)',
+                  borderRadius: '12px',
+                  padding: '1.5rem',
+                  marginBottom: '2rem'
+                }}>
+                  <h4 style={{ 
+                    fontWeight: '600', 
+                    marginBottom: '1rem',
+                    color: 'var(--text-primary)',
+                    textAlign: 'center',
+                    fontSize: '1.25rem'
+                  }}>
+                    🚀 Next Steps: Get Devin Set Up
+                  </h4>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+                    gap: '1rem' 
+                  }}>
+                    <a
+                      href="https://aka.ms/devin"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="setup-link"
+                      style={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        padding: '1rem',
+                        background: 'var(--card-bg)',
+                        borderRadius: '8px',
+                        textDecoration: 'none',
+                        border: '1px solid var(--border-color)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 120, 212, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <span style={{ fontSize: '1.5rem' }}>📦</span>
+                      <div style={{ textAlign: 'left' }}>
+                        <div style={{ fontWeight: '600', color: 'var(--azure-teal)' }}>Install Devin</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Azure Marketplace</div>
+                      </div>
+                    </a>
+                    
+                    <a
+                      href="https://app.devin.ai/workspace"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="setup-link"
+                      style={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        padding: '1rem',
+                        background: 'var(--card-bg)',
+                        borderRadius: '8px',
+                        textDecoration: 'none',
+                        border: '1px solid var(--border-color)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 120, 212, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <span style={{ fontSize: '1.5rem' }}>🏠</span>
+                      <div style={{ textAlign: 'left' }}>
+                        <div style={{ fontWeight: '600', color: 'var(--azure-teal)' }}>Devin Workspace</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Add your repo</div>
+                      </div>
+                    </a>
+                    
+                    <a
+                      href="https://docs.devin.ai/integrations/gh"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="setup-link"
+                      style={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        padding: '1rem',
+                        background: 'var(--card-bg)',
+                        borderRadius: '8px',
+                        textDecoration: 'none',
+                        border: '1px solid var(--border-color)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 120, 212, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <span style={{ fontSize: '1.5rem' }}>🔗</span>
+                      <div style={{ textAlign: 'left' }}>
+                        <div style={{ fontWeight: '600', color: 'var(--azure-teal)' }}>GitHub Integration</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Setup guide</div>
+                      </div>
+                    </a>
+                    
+                    <a
+                      href="https://www.youtube.com/watch?v=fgSzneNlpZs"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="setup-link"
+                      style={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        padding: '1rem',
+                        background: 'var(--card-bg)',
+                        borderRadius: '8px',
+                        textDecoration: 'none',
+                        border: '1px solid var(--border-color)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 120, 212, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <span style={{ fontSize: '1.5rem' }}>🎥</span>
+                      <div style={{ textAlign: 'left' }}>
+                        <div style={{ fontWeight: '600', color: 'var(--azure-teal)' }}>Video Walkthrough</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Quick setup guide</div>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              )}
 
               <div style={{ 
                 background: 'var(--card-bg)',

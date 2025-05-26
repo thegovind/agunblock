@@ -62,10 +62,9 @@ const devin: Agent = {
     },
     {
       title: 'Connect Integrations',
-      description: 'Connect Devin with GitHub, Slack, Azure DevOps, and enable DeepWiki for enhanced codebase analysis and DeepSearch for semantic code search.',
+      description: 'Connect Devin with GitHub, Slack, Jira, and enable DeepWiki for enhanced codebase analysis and DeepSearch for semantic code search.',
       links: [
-        { text: 'DeepWiki Integration', url: 'https://deepwiki.com' },
-        { text: 'Slack Integration Guide', url: 'https://docs.devin.ai/integrations/slack' }
+        { text: 'DeepWiki Integration', url: 'https://deepwiki.com' }
       ]
     }
   ],

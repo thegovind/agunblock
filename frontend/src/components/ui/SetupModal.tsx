@@ -58,11 +58,33 @@ const SetupModal: React.FC<SetupModalProps> = ({ isOpen, onClose, agent }) => {
               <div className="setup-section">
                 <h3 className="setup-section-title">Prerequisites</h3>
                 <ul className="setup-prerequisites">
-                  {agent.prerequisites.map((prereq, index) => (
-                    <li key={index} className="setup-prerequisite-item">
-                      {prereq}
-                    </li>
-                  ))}
+                  {agent.prerequisites.map((prereq, index) => {
+                    // Check if the prerequisite contains a URL
+                    const urlMatch = prereq.match(/(https?:\/\/[^\s]+)/);
+                    if (urlMatch) {
+                      const url = urlMatch[1];
+                      const text = prereq.replace(url, '').replace(':', '').trim();
+                      return (
+                        <li key={index} className="setup-prerequisite-item">
+                          <strong>{text}:</strong>{' '}
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="setup-link"
+                            style={{ marginLeft: '0.5rem' }}
+                          >
+                            {url} <span className="external-link-icon">↗</span>
+                          </a>
+                        </li>
+                      );
+                    }
+                    return (
+                      <li key={index} className="setup-prerequisite-item">
+                        {prereq}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}
