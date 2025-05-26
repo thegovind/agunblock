@@ -161,9 +161,9 @@ const HomePage: React.FC = () => {
       {/* ---------- AGENT CATEGORIES ---------- */}
       <section className="categories" id="agents">
         <div className="categories-content">
-          <h2 className="section-title">AI Agents by Category</h2>
+          <h2 className="section-title">Agents by Category</h2>
           <p className="section-subtitle">
-            Find the perfect AI assistant for each stage of your development lifecycle
+            Find the perfect SDLC agent for each stage of your development lifecycle
           </p>
 
           <div className="category-tabs">
@@ -224,7 +224,7 @@ const HomePage: React.FC = () => {
               </p>
             </div>
             <div className="integration-item">
-              <div className="integration-icon">🔄</div>
+              <div className="integration-icon">⚙️</div>
               <h3>DevOps Pipeline</h3>
               <p>
                 Integrate agents into your CI/CD workflows for automated

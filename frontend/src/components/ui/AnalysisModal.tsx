@@ -115,12 +115,12 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
           <div style={{
             width: '32px',
             height: '32px',
-            background: 'linear-gradient(135deg, #0078d4 0%, #106ebe 100%)',
+            background: 'var(--elegant-primary)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0, 120, 212, 0.3)',
+            boxShadow: '0 4px 12px rgba(55, 65, 81, 0.3)',
             animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
           }}>
             <Loader2 style={{ width: '18px', height: '18px', color: 'white' }} className="animate-spin" />
@@ -222,19 +222,35 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
         </div>
         
         <div className="modal-content">
+          {/* Experimental Notice */}
+          <div className="experimental-notice" style={{ marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <div className="experimental-badge">
+                EXPERIMENTAL
+              </div>
+              <span className="experimental-title">
+                Powered by Azure AI Foundry Agent Service
+              </span>
+            </div>
+            <p className="experimental-description">
+              This AI agent analysis feature is currently experimental and under active development. 
+              <strong> Coming soon:</strong> Repository indexing and caching capabilities for faster analysis and improved results.
+            </p>
+          </div>
+
           {!isAnalyzing && !results && !error && (
             <div className="analysis-start">
               <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                 <div style={{ 
                   width: '80px', 
                   height: '80px', 
-                  background: 'linear-gradient(135deg, #0078d4 0%, #8257e5 100%)',
+                  background: 'var(--elegant-primary)',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto 1.5rem auto',
-                  boxShadow: '0 8px 24px rgba(130, 87, 229, 0.3)'
+                  boxShadow: '0 8px 24px rgba(55, 65, 81, 0.3)'
                 }}>
                   <Loader2 style={{ width: '32px', height: '32px', color: 'white' }} />
                 </div>
@@ -288,7 +304,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
                         <div style={{ 
                           width: '48px', 
                           height: '48px', 
-                          background: 'linear-gradient(135deg, #0078d4 0%, #8257e5 100%)',
+                          background: 'var(--elegant-primary)',
                           borderRadius: '50%',
                           display: 'flex',
                           alignItems: 'center',
@@ -297,7 +313,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
                           color: 'white',
                           fontSize: '1rem',
                           fontWeight: '700',
-                          boxShadow: '0 6px 16px rgba(130, 87, 229, 0.4)',
+                          boxShadow: '0 6px 16px rgba(55, 65, 81, 0.4)',
                           transition: 'transform 0.2s ease'
                         }}>
                           {step.id}
@@ -379,7 +395,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
                 }}>
                   <div 
                     style={{ 
-                      background: 'linear-gradient(90deg, #0078d4 0%, #8257e5 100%)',
+                      background: 'var(--elegant-primary)',
                       height: '100%',
                       borderRadius: '6px',
                       transition: 'width 0.5s ease',
@@ -408,8 +424,8 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
                   let borderColor = 'var(--border-color)';
                   
                   if (isActive) {
-                    backgroundColor = 'rgba(0, 120, 212, 0.05)';
-                    borderColor = 'rgba(0, 120, 212, 0.3)';
+                    backgroundColor = 'rgba(55, 65, 81, 0.05)';
+                    borderColor = 'rgba(55, 65, 81, 0.3)';
                   } else if (status === 'completed') {
                     backgroundColor = 'rgba(16, 185, 129, 0.05)';
                     borderColor = 'rgba(16, 185, 129, 0.3)';
@@ -444,7 +460,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
                         }}>
                           <h4 style={{ 
                             fontWeight: '600',
-                            color: isActive ? '#0078d4' : 'var(--text-primary)',
+                            color: isActive ? 'var(--elegant-secondary)' : 'var(--text-primary)',
                             margin: 0,
                             fontSize: '1rem'
                           }}>
@@ -536,8 +552,8 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
 
               {agentId === 'devin' && (
                 <div style={{ 
-                  background: 'linear-gradient(135deg, rgba(0, 120, 212, 0.05) 0%, rgba(130, 87, 229, 0.05) 100%)',
-                  border: '1px solid rgba(0, 120, 212, 0.2)',
+                  background: 'rgba(55, 65, 81, 0.05)',
+                  border: '1px solid rgba(55, 65, 81, 0.2)',
                   borderRadius: '12px',
                   padding: '1.5rem',
                   marginBottom: '2rem'
@@ -575,7 +591,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 120, 212, 0.2)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(55, 65, 81, 0.2)';
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.transform = 'translateY(0)';
@@ -608,7 +624,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 120, 212, 0.2)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(55, 65, 81, 0.2)';
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.transform = 'translateY(0)';
@@ -641,7 +657,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 120, 212, 0.2)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(55, 65, 81, 0.2)';
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.transform = 'translateY(0)';
@@ -674,7 +690,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 120, 212, 0.2)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(55, 65, 81, 0.2)';
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.transform = 'translateY(0)';
