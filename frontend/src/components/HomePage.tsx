@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { Star } from 'lucide-react';
+
 import { AgentCategory } from '../types/agent';
 import agents from '../data/agents';
 import AgentCard from './AgentCard';
@@ -45,14 +45,6 @@ const HomePage: React.FC = () => {
   const filteredAgents = agents.filter(
     (a) => activeCategory === 'all' || a.category === activeCategory
   );
-
-  /* format star count */
-  const formatStarCount = (count: number): string => {
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}k`;
-    }
-    return count.toString();
-  };
 
   /* fetch GitHub star count */
   useEffect(() => {
@@ -120,15 +112,11 @@ const HomePage: React.FC = () => {
             <a href="#integration">Ecosystem</a>
             <a
               href="https://github.com/microsoft/agunblock"
-              className="github-btn"
+              className="github-link"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <div className="star-section">
-                <Star size={16} />
-                {starCount && <span className="star-count">{formatStarCount(starCount)}</span>}
-              </div>
-              <span>Star on GitHub</span>
+              microsoft/agunblock {starCount && `⭐ ${starCount}`}
             </a>
           </div>
         </div>
@@ -137,38 +125,36 @@ const HomePage: React.FC = () => {
       {/* ---------- HERO ---------- */}
       <section className="hero">
         <div className="hero-content">
-          <h1 className="hero-title">Streamline Your Development with AI Agents</h1>
           
           <div className="hero-input-section">
             <div className="repo-input-container-hero">
               <input
                 type="text"
                 className="repo-input-hero"
-                placeholder="Enter GitHub repo URL or owner/repo"
+                placeholder="Enter owner/repo (e.g., microsoft/vscode)"
                 value={repoInput}
                 onChange={(e) => setRepoInput(e.target.value)}
                 onKeyPress={handleKeyPress}
               />
               <button className="analyze-btn-hero" onClick={analyzeRepo}>
-                Analyze Repository
+                Get Setup Guide
               </button>
             </div>
 
             <div className="hero-try-section">
               <span className="hero-try-label">Try:</span>
-              <button
-                className="hero-try-example-btn"
+              <span
+                className="hero-try-example-link"
                 onClick={() => setRepoInput('Azure-Samples/snippy')}
               >
                 Azure-Samples/snippy
-              </button>
-              <span className="hero-try-or">or paste any GitHub URL</span>
+              </span>
             </div>
+            
+            <p className="hero-description">
+              Bootstrap your repository for different SDLC agents. Replace 'github.com' with 'agunblock.com' in any GitHub URL for personalized setup instructions.
+            </p>
           </div>
-
-          <p className="hero-description">
-            Discover, configure, and integrate powerful AI agents into your development workflow.
-          </p>
         </div>
       </section>
 
