@@ -133,9 +133,11 @@ const AgentCard: React.FC<AgentCardProps> = ({
           )}
           {agent.id === 'devin' && (
             <>
-              <li>Access Devin through Azure marketplace</li>
-              <li>Clone this repository using git</li>
-              <li>Ask Devin to analyze and work with your codebase</li>
+              <li><strong>Prerequisites:</strong></li>
+              <li>• Install Devin: <a href="https://aka.ms/devin" target="_blank" rel="noopener noreferrer" style={{color: 'var(--azure-teal)'}}>https://aka.ms/devin</a></li>
+              <li>• Add repo to workspace: <a href="https://app.devin.ai/workspace" target="_blank" rel="noopener noreferrer" style={{color: 'var(--azure-teal)'}}>https://app.devin.ai/workspace</a></li>
+              <li>• GitHub integration: <a href="https://docs.devin.ai/integrations/gh" target="_blank" rel="noopener noreferrer" style={{color: 'var(--azure-teal)'}}>Integration Guide</a></li>
+              <li>• Video walkthrough: <a href="https://www.youtube.com/watch?v=fgSzneNlpZs" target="_blank" rel="noopener noreferrer" style={{color: 'var(--azure-teal)'}}>Setup Video</a></li>
             </>
           )}
           {agent.id === 'codex-cli' && (
