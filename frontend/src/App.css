@@ -6,23 +6,26 @@
   }
   
   :root {
-    --primary: #0078d4;
-    --primary-dark: #005a9e;
-    --secondary: #00bcf2;
-    --bg-dark: #1f1f1f;
-    --bg-light: #2d2d30;
-    --text-primary: #ffffff;
-    --text-secondary: #cccccc;
-    --accent: #5c2d91;
-    --success: #107c10;
-    --card-bg: rgba(37, 37, 38, 0.9);
-    --border: rgba(255, 255, 255, 0.08);
-    --border-color: rgba(255, 255, 255, 0.08);
-    --code-bg: #1a1a1a;
-    --azure-teal: #00bcf2;
-    --azure-purple: #5c2d91;
-    --azure-green: #107c10;
-    --azure-orange: #ff8c00;
+    --primary: #2d2d2d;
+    --primary-dark: #1a1a1a;
+    --secondary: #6b7280;
+    --bg-dark: #0f0f0f;
+    --bg-light: #1a1a1a;
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+    --accent: #f3f4f6;
+    --success: #059669;
+    --card-bg: rgba(26, 26, 26, 0.95);
+    --border: rgba(255, 255, 255, 0.1);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --code-bg: #111111;
+    --elegant-primary: #374151;
+    --elegant-secondary: #6b7280;
+    --elegant-accent: #f9fafb;
+    --warm-accent: #d1d5db;
+    --azure-green: #10b981;
+    --azure-orange: #f59e0b;
+    --azure-teal: #06b6d4;
   }
   
   /* ---------- GLOBAL ---------- */
@@ -34,32 +37,12 @@
     line-height: 1.6;
   }
   
-  /* ---------- ANIMATED BACKGROUND ---------- */
+  /* ---------- SIMPLE BACKGROUND ---------- */
   .bg-animation {
     position: fixed;
     inset: 0;
     z-index: -1;
-    background: linear-gradient(
-      135deg,
-      #1f1f1f 0%,
-      #2d2d30 50%,
-      #1f1f1f 100%
-    );
-  }
-  .bg-animation::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(0, 120, 212, 0.05) 0%, transparent 70%);
-    animation: rotate 60s linear infinite;
-  }
-  @keyframes rotate {
-    to {
-      transform: rotate(360deg);
-    }
+    background: var(--bg-dark);
   }
   
   /* ---------- NAVIGATION ---------- */
@@ -112,7 +95,7 @@
     transition: color 0.3s ease;
   }
   .nav-links a:hover {
-    color: var(--azure-teal);
+    color: var(--warm-accent);
   }
   
   /* GITHUB LINK */
@@ -123,7 +106,7 @@
     transition: color 0.3s ease;
   }
   .github-link:hover {
-    color: var(--azure-teal);
+    color: var(--warm-accent);
   }
   
   /* ---------- HERO ---------- */
@@ -177,7 +160,7 @@
   }
   
   .repo-input-container-hero:focus-within {
-    border-color: var(--azure-teal);
+    border-color: var(--elegant-secondary);
   }
   
   .repo-input-hero {
@@ -202,21 +185,22 @@
   
   .analyze-btn-hero {
     flex-shrink: 0;
-    background: var(--azure-teal);
-    color: var(--bg-dark);
-    border: none;
+    background: var(--elegant-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
     padding: 0.75rem 1.5rem;
     margin: 0.5rem;
     border-radius: 6px;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.3s ease;
   }
   
   .analyze-btn-hero:hover {
-    background: var(--primary);
-    color: #fff;
+    background: var(--accent);
+    color: var(--primary-dark);
+    border-color: var(--warm-accent);
   }
   
   .hero-try-section {
@@ -235,7 +219,7 @@
   }
   
   .hero-try-example-link {
-    color: var(--azure-teal);
+    color: var(--warm-accent);
     text-decoration: underline;
     cursor: pointer;
     font-weight: 500;
@@ -243,7 +227,7 @@
   }
   
   .hero-try-example-link:hover {
-    color: var(--primary);
+    color: var(--accent);
   }
   
   .hero-try-or {
@@ -323,12 +307,7 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      var(--azure-teal) 50%,
-      transparent 100%
-    );
+    background: var(--border);
   }
   
   .categories-content {
@@ -363,15 +342,16 @@
     transition: all 0.3s ease;
   }
   .category-tab.active {
-    background: var(--primary);
-    border-color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 120, 212, 0.3);
+    background: var(--elegant-primary);
+    border-color: var(--elegant-secondary);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
   .category-tab:hover:not(.active) {
-    border-color: var(--azure-teal);
-    color: var(--azure-teal);
-    transform: translateY(-2px);
+    border-color: var(--elegant-secondary);
+    color: var(--warm-accent);
+    transform: translateY(-1px);
   }
   
   /* ---------- AGENT CARDS ---------- */
@@ -399,13 +379,8 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: linear-gradient(
-      90deg,
-      var(--primary) 0%,
-      var(--azure-teal) 50%,
-      var(--azure-purple) 100%
-    );
+    height: 2px;
+    background: var(--elegant-secondary);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.3s ease;
@@ -414,9 +389,9 @@
     transform: scaleX(1);
   }
   .agent-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 120, 212, 0.2);
-    border-color: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    border-color: var(--elegant-secondary);
   }
   .agent-header {
     display: flex;
@@ -446,7 +421,7 @@
     margin-bottom: 0.25rem;
   }
   .agent-type {
-    color: var(--azure-teal);
+    color: var(--elegant-secondary);
     font-size: 0.9rem;
     font-weight: 500;
   }
@@ -467,9 +442,10 @@
     gap: 0.5rem;
   }
   .agent-features li::before {
-    content: '✓';
-    color: var(--azure-green);
+    content: '·';
+    color: var(--elegant-secondary);
     font-weight: bold;
+    font-size: 1.2rem;
   }
   .agent-actions {
     display: flex;
@@ -494,24 +470,26 @@
     gap: 0.5rem;
   }
   .agent-btn.primary {
-    background: var(--primary);
-    color: #fff;
+    background: var(--elegant-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
   }
   .agent-btn.primary:hover {
-    background: var(--primary-dark);
+    background: var(--accent);
+    color: var(--primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 120, 212, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
   .agent-btn.secondary {
     background: transparent;
-    color: var(--azure-teal);
-    border: 2px solid var(--azure-teal);
+    color: var(--elegant-secondary);
+    border: 1px solid var(--elegant-secondary);
   }
   .agent-btn.secondary:hover {
-    background: var(--azure-teal);
-    color: var(--bg-dark);
+    background: var(--elegant-secondary);
+    color: var(--text-primary);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 188, 242, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
   
   /* ---------- INTEGRATION SECTION ---------- */
@@ -530,12 +508,7 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      var(--azure-purple) 50%,
-      transparent 100%
-    );
+    background: var(--border);
   }
   .integration-content {
     max-width: 1200px;
@@ -556,9 +529,9 @@
     transition: all 0.3s ease;
   }
   .integration-item:hover {
-    transform: translateY(-5px);
-    border-color: var(--primary);
-    box-shadow: 0 10px 30px rgba(0, 120, 212, 0.2);
+    transform: translateY(-3px);
+    border-color: var(--elegant-secondary);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
   .integration-icon {
     font-size: 3rem;
@@ -590,7 +563,7 @@
     transition: color 0.3s ease;
   }
   .footer-links a:hover {
-    color: var(--azure-teal);
+    color: var(--warm-accent);
   }
   
   /* ---------- RESPONSIVE ---------- */
@@ -609,7 +582,7 @@
     }
     .hero {
       min-height: 40vh;
-      padding: 5rem 1rem 0.5rem;
+      padding: 8rem 1rem 0.5rem;
     }
     .hero-title {
       font-size: 1.25rem;
@@ -650,16 +623,37 @@
     }
     .category-tabs {
       margin-bottom: 1rem;
-    }
-    .agents-grid {
-      grid-template-columns: 1fr;
-    }
-    .category-tabs {
       gap: 0.5rem;
     }
     .category-tab {
       padding: 0.5rem 1rem;
       font-size: 0.9rem;
+    }
+    .categories-content {
+      padding: 0 1rem;
+    }
+    .agents-grid {
+      grid-template-columns: 1fr;
+      margin: 0;
+      padding: 0;
+      gap: 1.5rem;
+    }
+    .agent-card {
+      margin: 0;
+      max-width: 100%;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .integration {
+      padding: 2rem 1rem;
+    }
+    .integration-content {
+      padding: 0;
+    }
+    .integration-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-top: 2rem;
     }
   }
   
@@ -697,15 +691,15 @@
     background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-light) 100%);
     border-bottom: 1px solid var(--border);
     padding-top: 5rem;
-    min-height: 300px;
+    min-height: 200px;
   }
   .repo-header-content {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1.5rem;
   }
   .back-link {
-    color: var(--azure-teal);
+    color: var(--warm-accent);
     text-decoration: none;
     font-weight: 500;
     margin-bottom: 1rem;
@@ -726,21 +720,21 @@
   .repo-info-card-header {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 2rem 2rem;
+    padding: 0 1.5rem 1rem;
   }
   .repo-info-content {
     background: var(--card-bg);
     border: 1px solid var(--border);
-    border-radius: 15px;
-    padding: 2rem;
+    border-radius: 8px;
+    padding: 1.25rem;
     backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   }
   
   /* Enhanced repo card styles */
   .repo-card-flex {
     display: flex;
-    gap: 2rem;
+    gap: 1.5rem;
     align-items: flex-start;
   }
   
@@ -749,12 +743,12 @@
   }
   
   .org-logo-img {
-    width: 80px;
-    height: 80px;
-    border-radius: 8px;
+    width: 60px;
+    height: 60px;
+    border-radius: 6px;
     object-fit: cover;
     border: 1px solid var(--border);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   }
   
   .repo-card-details {
@@ -762,18 +756,18 @@
   }
   
   .repo-name {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: 700;
     margin-bottom: 0.25rem;
     color: var(--text-primary);
   }
   
   .repo-full-path {
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
   }
   
   .repo-full-path a {
-    color: var(--azure-teal);
+    color: var(--warm-accent);
     text-decoration: none;
     font-size: 1rem;
     display: inline-flex;
@@ -785,44 +779,46 @@
   }
   
   .repo-actions {
-    margin-top: 1.5rem;
+    margin-top: 1rem;
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
   }
   
   .github-link-button {
     display: inline-flex;
     align-items: center;
-    background: var(--primary);
-    color: #fff;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
+    background: var(--elegant-primary);
+    color: var(--text-primary);
+    padding: 0.6rem 1.25rem;
+    border-radius: 6px;
     text-decoration: none;
     font-weight: 500;
+    font-size: 0.9rem;
     transition: all 0.3s ease;
-    border: 2px solid var(--primary);
+    border: 1px solid var(--border);
   }
   
   .github-link-button:hover {
-    background: var(--primary-dark);
-    border-color: var(--primary-dark);
+    background: var(--accent);
+    color: var(--primary-dark);
+    border-color: var(--warm-accent);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,120,212,0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
   
   .github-link-button.secondary {
     background: transparent;
-    color: var(--azure-teal);
-    border: 2px solid var(--azure-teal);
+    color: var(--elegant-secondary);
+    border: 1px solid var(--elegant-secondary);
   }
   
   .github-link-button.secondary:hover {
-    background: var(--azure-teal);
-    border-color: var(--azure-teal);
-    color: var(--bg-dark);
+    background: var(--elegant-secondary);
+    color: var(--text-primary);
+    border-color: var(--elegant-secondary);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 188, 242, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
   
   .language-indicator {
@@ -834,14 +830,14 @@
   }
   .repo-description {
     color: var(--text-secondary);
-    font-size: 1.1rem;
-    margin-bottom: 1.5rem;
-    line-height: 1.6;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
   }
   .repo-meta-inline {
     display: flex;
     flex-wrap: wrap;
-    gap: 2rem;
+    gap: 1.5rem;
     align-items: center;
   }
   .repo-meta-item {
@@ -880,7 +876,7 @@
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 3rem 2rem 2rem;
+    padding: 2rem 2rem 2rem;
   }
   .repo-info-card {
     background: var(--card-bg);
@@ -900,37 +896,126 @@
   .agent-category-title {
     text-align: left;
     font-size: 1.5rem;
-    color: var(--azure-teal);
+    color: var(--elegant-secondary);
     margin-bottom: 1.5rem;
     margin-left: 0.5rem;
   }
+
+  .repo-page-subtitle {
+    text-align: center;
+    font-size: 1.15rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  /* ---------- EXPERIMENTAL NOTICE ---------- */
+  .experimental-notice {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    box-shadow: 0 1px 4px rgba(6, 182, 212, 0.1);
+  }
+
+  .experimental-badge {
+    background: var(--azure-teal);
+    color: var(--bg-dark);
+    border-radius: 3px;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+    font-weight: bold;
+  }
+
+  .experimental-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .experimental-description {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    opacity: 0.9;
+    color: var(--text-secondary);
+  }
   
   @media (max-width: 768px) {
+    .repo-header {
+      min-height: 150px;
+      padding-top: 5rem;
+    }
+    .repo-header-content {
+      padding: 1rem;
+    }
+    .repo-info-card-header {
+      padding: 0 1rem 0.75rem;
+    }
+    .repo-info-content {
+      padding: 1rem;
+    }
+    .repo-main-centered {
+      padding: 1.5rem 1rem 2rem;
+    }
     .repo-meta-inline {
       flex-direction: column;
       align-items: flex-start;
-      gap: 1rem;
+      gap: 0.75rem;
     }
     .repo-title {
       font-size: 1.8rem;
     }
+    .repo-name {
+      font-size: 1.3rem;
+    }
+    .repo-description {
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
     .repo-actions {
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
     }
     .github-link-button {
       justify-content: center;
       text-align: center;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
     }
     .repo-card-flex {
-      flex-direction: column;
-      gap: 1.5rem;
-      text-align: center;
+      flex-direction: row;
+      gap: 1rem;
+      text-align: left;
+      align-items: flex-start;
     }
     .org-logo-img {
-      width: 60px;
-      height: 60px;
-      margin: 0 auto;
+      width: 40px;
+      height: 40px;
+      margin: 0;
+      flex-shrink: 0;
+    }
+    .repo-page-subtitle {
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .experimental-notice {
+      margin-bottom: 1rem;
+      padding: 0.6rem;
+    }
+    .experimental-badge {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.35rem;
+    }
+    .experimental-title {
+      font-size: 0.8rem;
+    }
+    .experimental-description {
+      font-size: 0.8rem;
     }
   }
   
@@ -1044,7 +1129,7 @@
   
   .setup-section-title {
     font-size: 1.25rem;
-    color: var(--azure-teal);
+    color: var(--elegant-secondary);
     margin-bottom: 1rem;
     border-bottom: 1px solid var(--border);
     padding-bottom: 0.5rem;
@@ -1067,7 +1152,7 @@
   
   .setup-prerequisite-item::before {
     content: '•';
-    color: var(--azure-teal);
+    color: var(--elegant-secondary);
     font-weight: bold;
   }
   
@@ -1086,8 +1171,8 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--azure-teal);
-    color: var(--bg-dark);
+    background: var(--elegant-secondary);
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     justify-content: center;

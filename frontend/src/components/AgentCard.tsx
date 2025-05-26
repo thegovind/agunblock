@@ -121,7 +121,6 @@ const AgentCard: React.FC<AgentCardProps> = ({
         </>
       ) : (
         <ul className="agent-features">
-          <li>How to use with {repoName}:</li>
           {agent.id === 'github-copilot-agent' && (
             <>
               <li>Enable Copilot Agent in organization and repository settings</li>
@@ -133,11 +132,11 @@ const AgentCard: React.FC<AgentCardProps> = ({
           )}
           {agent.id === 'devin' && (
             <>
-              <li><strong>Prerequisites:</strong></li>
-              <li>• Install Devin: <a href="https://aka.ms/devin" target="_blank" rel="noopener noreferrer" style={{color: 'var(--azure-teal)'}}>https://aka.ms/devin</a></li>
-              <li>• Add repo to workspace: <a href="https://app.devin.ai/workspace" target="_blank" rel="noopener noreferrer" style={{color: 'var(--azure-teal)'}}>https://app.devin.ai/workspace</a></li>
-              <li>• GitHub integration: <a href="https://docs.devin.ai/integrations/gh" target="_blank" rel="noopener noreferrer" style={{color: 'var(--azure-teal)'}}>Integration Guide</a></li>
-              <li>• Video walkthrough: <a href="https://www.youtube.com/watch?v=fgSzneNlpZs" target="_blank" rel="noopener noreferrer" style={{color: 'var(--azure-teal)'}}>Setup Video</a></li>
+              <li>Access Devin through Azure Marketplace deployment</li>
+              <li>Connect your GitHub account and repository permissions</li>
+              <li>Add this repository to your Devin workspace</li>
+              <li>Configure Devin's machine for your project dependencies</li>
+              <li>Start collaborating with Devin through the embedded IDE</li>
             </>
           )}
           {agent.id === 'codex-cli' && (
@@ -150,7 +149,7 @@ const AgentCard: React.FC<AgentCardProps> = ({
           {agent.id === 'claude-code' && (
             <>
               <li>Access Claude Code through Azure OpenAI Service</li>
-              <li>Share repository code with Claude</li>
+              <li>Share this repository's code with Claude</li>
               <li>
                 Ask for code explanations or refactoring suggestions
               </li>
@@ -159,7 +158,7 @@ const AgentCard: React.FC<AgentCardProps> = ({
           {agent.id === 'sreagent' && (
             <>
               <li>Set up SREAgent in your Azure environment</li>
-              <li>Connect your repository for monitoring</li>
+              <li>Connect this repository for monitoring</li>
               <li>
                 Configure alerts and automated remediation policies
               </li>

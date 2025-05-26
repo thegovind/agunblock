@@ -488,40 +488,21 @@ const RepoPage: React.FC = () => {
       {/* ---------- MAIN ---------- */}
       <div className="repo-main-centered">
         {/* ---------- AGENT LIST FOR THIS REPO ---------- */}
-        <h2 className="section-title">AI Agents for This Repository</h2>
-        <p className="section-subtitle">
-          Discover how to use these agents with {repoData!.fullName}
-        </p>
+        <h3 className="repo-page-subtitle">
+          Discover how to use these SDLC agents with {repoData!.fullName}
+        </h3>
 
         {/* Experimental Notice */}
-        <div className="experimental-notice" style={{
-          background: 'linear-gradient(135deg, #5c2d91 0%, #7c3aed 100%)',
-          border: '1px solid #8b5cf6',
-          borderRadius: '8px',
-          padding: '1rem',
-          marginBottom: '2rem',
-          color: 'white'
-        }}>
+        <div className="experimental-notice">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.2)',
-              borderRadius: '4px',
-              padding: '0.25rem 0.5rem',
-              fontSize: '0.75rem',
-              fontWeight: 'bold'
-            }}>
+            <div className="experimental-badge">
               EXPERIMENTAL
             </div>
-            <span style={{ fontSize: '0.9rem', fontWeight: '600' }}>
+            <span className="experimental-title">
               Powered by Azure AI Foundry Agent Service
             </span>
           </div>
-          <p style={{ 
-            margin: 0, 
-            fontSize: '0.9rem', 
-            lineHeight: '1.4',
-            opacity: 0.95 
-          }}>
+          <p className="experimental-description">
             This AI agent analysis feature is currently experimental and under active development. 
             <strong> Coming soon:</strong> Repository indexing and caching capabilities for faster analysis.
           </p>
