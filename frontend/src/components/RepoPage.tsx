@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Github, ExternalLink, Book, CheckCircle, Star } from 'lucide-react';
+import { Github, ExternalLink, Book, CheckCircle } from 'lucide-react';
 import logo from '../assets/logo.png';
 import agents from '../data/agents';
 import AgentCard from './AgentCard';
@@ -84,13 +84,7 @@ const RepoPage: React.FC = () => {
   const [selectedAgent, setSelectedAgent] = useState<{id: string, name: string} | null>(null);
   const [starCount, setStarCount] = useState<number | null>(null);
 
-  /* format star count */
-  const formatStarCount = (count: number): string => {
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}k`;
-    }
-    return count.toString();
-  };
+
 
   /* fetch GitHub star count */
   useEffect(() => {
@@ -257,15 +251,11 @@ const RepoPage: React.FC = () => {
           <Link to="/">Home</Link>
           <a
             href="https://github.com/microsoft/agunblock"
-            className="github-btn"
+            className="github-link"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <div className="star-section">
-              <Star size={16} />
-              {starCount && <span className="star-count">{formatStarCount(starCount)}</span>}
-            </div>
-            <span>Star on GitHub</span>
+            microsoft/agunblock {starCount && `⭐ ${starCount}`}
           </a>
         </div>
       </div>
@@ -505,8 +495,8 @@ const RepoPage: React.FC = () => {
 
         {/* Experimental Notice */}
         <div className="experimental-notice" style={{
-          background: 'linear-gradient(135deg, #0078d4 0%, #106ebe 100%)',
-          border: '1px solid #1890ff',
+          background: 'linear-gradient(135deg, #5c2d91 0%, #7c3aed 100%)',
+          border: '1px solid #8b5cf6',
           borderRadius: '8px',
           padding: '1rem',
           marginBottom: '2rem',
