@@ -126,6 +126,8 @@ const HomePage: React.FC = () => {
       <section className="hero">
         <div className="hero-content">
           
+          <h1 className="hero-title">Onboarding Agent to turbocharge SDLC</h1>
+          
           <div className="hero-input-section">
             <div className="repo-input-container-hero">
               <input
@@ -151,9 +153,19 @@ const HomePage: React.FC = () => {
               </span>
             </div>
             
-            <p className="hero-description">
-              Bootstrap your repository for different SDLC agents. Replace 'github.com' with 'agunblock.com' in any GitHub URL for personalized setup instructions.
-            </p>
+            {/* Animated URL transformation */}
+            <div className="url-animation-demo">
+              <span className="url-demo-text">
+                Replace{' '}
+                <span className="animated-domain">
+                  <span className="domain-text github">github.com</span>
+                  <span className="domain-text agunblock">agunblock.com</span>
+                </span>
+                {' '}in any GitHub URL
+              </span>
+            </div>
+            
+           
           </div>
         </div>
       </section>
