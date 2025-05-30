@@ -244,6 +244,85 @@
     opacity: 0.8;
   }
   
+  /* ---------- ANIMATED URL TRANSFORMATION ---------- */
+  .url-animation-demo {
+    margin: 1.5rem 0 0.5rem;
+    text-align: center;
+  }
+
+  .url-demo-text {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  .animated-domain {
+    position: relative;
+    display: inline-block;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-weight: 500;
+    min-width: 140px;
+    height: 1.2em;
+    vertical-align: baseline;
+  }
+
+  .domain-text {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .domain-text.github {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--text-primary);
+    animation: fadeToAgunblock 4s infinite;
+  }
+
+  .domain-text.agunblock {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--text-primary);
+    animation: fadeFromGithub 4s infinite;
+  }
+
+  @keyframes fadeToAgunblock {
+    0%, 35% {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    50%, 85% {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  @keyframes fadeFromGithub {
+    0%, 35% {
+      opacity: 0;
+      transform: translateX(-50%) translateY(20px);
+    }
+    50%, 85% {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(-50%) translateY(20px);
+    }
+  }
+  
   /* ---------- REPO INPUT ---------- */
   .repo-input-container {
     max-width: 600px;
@@ -610,6 +689,19 @@
     .hero-try-section {
       gap: 0.4rem;
       margin-bottom: 0.5rem;
+    }
+    .url-animation-demo {
+      margin: 1rem 0 0.75rem;
+    }
+    .url-demo-text {
+      font-size: 0.85rem;
+    }
+    .animated-domain {
+      min-width: 120px;
+    }
+    .domain-text {
+      padding: 0.15rem 0.4rem;
+      font-size: 0.9rem;
     }
     .categories {
       padding: 1.5rem 1rem 2rem;
