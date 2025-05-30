@@ -15,7 +15,7 @@ def setup_logging(level: str = "INFO", format_style: str = "detailed") -> loggin
     """
     
     # Create logger
-    logger = logging.getLogger("agunblock")
+    logger = logging.getLogger("gitagu")
     logger.setLevel(getattr(logging, level.upper()))
     
     # Remove existing handlers to avoid duplicates
@@ -50,14 +50,14 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
     Get a logger instance for a specific module or function.
     
     Args:
-        name: Optional name for the logger. If None, uses "agunblock"
+        name: Optional name for the logger. If None, uses "gitagu"
     
     Returns:
         Logger instance
     """
     if name:
-        return logging.getLogger(f"agunblock.{name}")
-    return logging.getLogger("agunblock")
+        return logging.getLogger(f"gitagu.{name}")
+    return logging.getLogger("gitagu")
 
 # Pre-configured loggers for common use cases
 def get_agent_logger() -> logging.Logger:

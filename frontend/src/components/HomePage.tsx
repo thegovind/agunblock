@@ -50,7 +50,7 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const fetchStarCount = async () => {
       try {
-        const response = await fetch('https://api.github.com/repos/microsoft/agunblock');
+        const response = await fetch('https://api.github.com/repos/microsoft/gitagu');
         if (response.ok) {
           const data = await response.json();
           setStarCount(data.stargazers_count);
@@ -103,20 +103,20 @@ const HomePage: React.FC = () => {
       {/* ---------- NAV ---------- */}
       <nav>
         <div className="nav-container">
-          <Link to="/" className="logo" aria-label="AGUnblock home">
-            <img src={logo} alt="AGUnblock logo" className="logo-img" />
+          <Link to="/" className="logo" aria-label="gitagu home">
+            <img src={logo} alt="gitagu logo" className="logo-img" />
           </Link>
 
           <div className="nav-links">
             <a href="#agents">Agents</a>
             <a href="#integration">Ecosystem</a>
             <a
-              href="https://github.com/microsoft/agunblock"
+              href="https://github.com/microsoft/gitagu"
               className="github-link"
               target="_blank"
               rel="noopener noreferrer"
             >
-              microsoft/agunblock {starCount && `⭐ ${starCount}`}
+              microsoft/gitagu {starCount && `⭐ ${starCount}`}
             </a>
           </div>
         </div>
@@ -156,12 +156,7 @@ const HomePage: React.FC = () => {
             {/* Animated URL transformation */}
             <div className="url-animation-demo">
               <span className="url-demo-text">
-                Replace{' '}
-                <span className="animated-domain">
-                  <span className="domain-text github">github.com</span>
-                  <span className="domain-text agunblock">agunblock.com</span>
-                </span>
-                {' '}in any GitHub URL
+                Replace hub with agu: git<span className="animated-domain-single"></span>.com/owner/repo
               </span>
             </div>
             
@@ -259,7 +254,7 @@ const HomePage: React.FC = () => {
       <footer>
         <div className="footer-content">
           <p style={{ color: 'var(--text-secondary)' }}>
-            © {new Date().getFullYear()} Microsoft Corporation. AGUnblock is an
+            © {new Date().getFullYear()} Microsoft Corporation. gitagu is an
             open source project, powered by Azure AI Foundry Agents Service.
           </p>
         </div>

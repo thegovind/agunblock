@@ -1,23 +1,23 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/microsoft/agunblock/main/.github/assets/logo.png" alt="AGUnblock logo" width="200"><br>
+  <img src="https://raw.githubusercontent.com/microsoft/gitagu/main/.github/assets/logo.png" alt="gitagu logo" width="200"><br>
   <b>Setup Utility to Unlock AI Agents for Your Development Workflow</b>
 </p>
 
-AGUnblock is an open-source utility that helps developers leverage AI agents for their Software Development Life Cycle (SDLC) through Azure. This platform provides a centralized hub for discovering, configuring, and integrating various AI coding agents into your development workflow, with a focus on setting up and connecting different AI agents to Azure services. It streamlines the process of getting started with AI-powered development tools by providing automated setup assistance and Azure integration guidance.
+gitagu is an open-source utility that helps developers leverage AI agents for their Software Development Life Cycle (SDLC) through Azure. This platform provides a centralized hub for discovering, configuring, and integrating various AI coding agents into your development workflow, with a focus on setting up and connecting different AI agents to Azure services. It streamlines the process of getting started with AI-powered development tools by providing automated setup assistance and Azure integration guidance.
 
 > [!CAUTION]
-> AGUnblock is currently under active development. Features and documentation are being added regularly. Feel free to star and watch the repository for updates!
+> gitagu is currently under active development. Features and documentation are being added regularly. Feel free to star and watch the repository for updates!
 
 > [!TIP]
-> **Try AGUnblock now!** Visit [agunblock.com](https://agunblock.com) to explore the platform and analyze your repositories with AI agents. For comprehensive documentation about how this project works, check out the detailed guide at [deepwiki.com/microsoft/agunblock](https://deepwiki.com/microsoft/agunblock).
+> **Try GitAgu now!** Visit [gitagu.com](https://gitagu.com) to explore the platform and analyze your repositories with AI agents. For comprehensive documentation about how this project works, check out the detailed guide at [deepwiki.com/microsoft/gitagu](https://deepwiki.com/microsoft/gitagu).
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/microsoft/agunblock/main/.github/assets/architecture.png" alt="AGUnblock architecture" width="50%"><br>
+  <img src="https://raw.githubusercontent.com/microsoft/gitagu/main/.github/assets/architecture.png" alt="gitagu architecture" width="50%"><br>
 </p>
 
 ## 🤖 Featured AI Agents
 
-AGUnblock currently supports the following AI agents:
+gitagu currently supports the following AI agents:
 
 - [**GitHub Copilot (Code Completions)**](https://github.com/features/copilot) - AI pair programmer that provides code suggestions directly in your editor as you type, with features like Next Edit Suggestions, Agent Mode for autonomous multi-file editing, and comment-to-code generation
 - [**GitHub Copilot Coding Agent**](https://github.blog/news-insights/product-news/github-copilot-meet-the-new-coding-agent/) - Asynchronous agent that autonomously completes GitHub Issues by creating pull requests, running CI/CD, and iterating on feedback. Assign issues to the agent to automate feature additions, bug fixes, refactoring, and more.
@@ -34,23 +34,23 @@ AGUnblock currently supports the following AI agents:
 
 ## 🚀 Getting Started
 
-Visit [agunblock.com](https://agunblock.com) to explore the platform. You can:
+Visit [gitagu.com](https://gitagu.com) to explore the platform. You can:
 
 1. Browse the homepage to learn about different AI agents and their capabilities
 2. Enter your GitHub repository URL (e.g., `github.com/username/repo`) in the search bar
-3. Alternatively, navigate directly to `agunblock.com/username/repo` to see agent recommendations for your repository
+3. Alternatively, navigate directly to `gitagu.com/username/repo` to see agent recommendations for your repository
 4. Click "Analyze Repository" for any agent to get tailored setup instructions
 
 ## 🔍 Try It With Your Repository
 
-The real power of AGUnblock is seeing how these AI agents can work with your specific codebase. Visit [agunblock.com](https://agunblock.com) and enter your GitHub repository to:
+The real power of GitAgu is seeing how these AI agents can work with your specific codebase. Visit [gitagu.com](https://gitagu.com) and enter your GitHub repository to:
 
 - Discover which AI agents are best suited for your project
 - Get repository-specific setup instructions
 - Learn productivity tips tailored to your codebase
 - Find the optimal integration points for each agent
 
-Simply replace `github.com` with `agunblock.com` in your repository URL to see how AI agents can enhance your development workflow!
+Simply replace `hub` with `agu` in your GitHub URL (github.com → gitagu.com) to see how AI agents can enhance your development workflow!
 
 ## 🛠️ Local Development
 
@@ -66,8 +66,8 @@ Simply replace `github.com` with `agunblock.com` in your repository URL to see h
 
 ```bash
 # Clone the repository
-git clone https://github.com/microsoft/agunblock.git
-cd agunblock/frontend
+git clone https://github.com/microsoft/gitagu.git
+cd gitagu/frontend
 
 # Install dependencies
 pnpm install
@@ -120,11 +120,11 @@ uvicorn app.main:app --reload
 
 ## 🤝 Contributing
 
-We welcome contributions to AGUnblock! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started.
+We welcome contributions to gitagu! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started.
 
 ## 📄 License
 
-AGUnblock is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+gitagu is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🔗 Related Projects
 
@@ -134,4 +134,4 @@ AGUnblock is licensed under the MIT License - see the [LICENSE](LICENSE) file fo
 
 ---
 
-© 2025 Microsoft Corporation. AGUnblock is an open source project.
+© 2025 Microsoft Corporation. gitagu is an open source project.

@@ -1,6 +1,6 @@
-# AGUnblock Frontend
+# gitagu Frontend
 
-This is the frontend for AGUnblock, an open-source utility under Microsoft that helps developers leverage AI agents for their Software Development Life Cycle (SDLC).
+This is the frontend for gitagu, an open-source utility under Microsoft that helps developers leverage AI agents for their Software Development Life Cycle (SDLC).
 
 ## Features
 
@@ -20,8 +20,8 @@ This is the frontend for AGUnblock, an open-source utility under Microsoft that 
 
 ```bash
 # Clone the repository
-git clone https://github.com/microsoft/agunblock.git
-cd agunblock/frontend
+git clone https://github.com/microsoft/gitagu.git
+cd gitagu/frontend
 
 # Install dependencies
 pnpm install
@@ -43,7 +43,7 @@ VITE_API_URL=http://localhost:8000
 For production, create a `.env.production` file:
 
 ```
-VITE_API_URL=https://api.agunblock.com
+VITE_API_URL=https://api.gitagu.com
 ```
 
 ## Building for Production
@@ -62,8 +62,8 @@ This will generate a `dist` directory with the production build.
 
 ## Learn More
 
-Visit [agunblock.com](https://agunblock.com) to see the live application and explore how AI agents can enhance your development workflow.
+Visit [gitagu.com](https://gitagu.com) to see the live application and explore how AI agents can enhance your development workflow.
 
 ---
 
-© 2025 Microsoft Corporation. AGUnblock is an open source project.
+© 2025 Microsoft Corporation. gitagu is an open source project.

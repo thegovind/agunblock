@@ -90,7 +90,7 @@ const RepoPage: React.FC = () => {
   useEffect(() => {
     const fetchStarCount = async () => {
       try {
-        const response = await fetch('https://api.github.com/repos/microsoft/agunblock');
+        const response = await fetch('https://api.github.com/repos/microsoft/gitagu');
         if (response.ok) {
           const data = await response.json();
           setStarCount(data.stargazers_count);
@@ -243,19 +243,19 @@ const RepoPage: React.FC = () => {
   const Nav = () => (
     <nav>
       <div className="nav-container">
-        <Link to="/" className="logo" aria-label="AGUnblock home">
-          <img src={logo} alt="AGUnblock logo" className="logo-img" />
+        <Link to="/" className="logo" aria-label="gitagu home">
+          <img src={logo} alt="gitagu logo" className="logo-img" />
         </Link>
 
         <div className="nav-links">
           <Link to="/">Home</Link>
           <a
-            href="https://github.com/microsoft/agunblock"
+            href="https://github.com/microsoft/gitagu"
             className="github-link"
             target="_blank"
             rel="noopener noreferrer"
           >
-            microsoft/agunblock {starCount && `⭐ ${starCount}`}
+            microsoft/gitagu {starCount && `⭐ ${starCount}`}
           </a>
         </div>
       </div>
@@ -538,7 +538,7 @@ const RepoPage: React.FC = () => {
       <footer>
         <div className="footer-content">
           <p style={{ color: 'var(--text-secondary)' }}>
-            © {new Date().getFullYear()} Microsoft Corporation. AGUnblock is an
+            © {new Date().getFullYear()} Microsoft Corporation. gitagu is an
             open source project.
           </p>
         </div>

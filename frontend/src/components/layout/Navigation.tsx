@@ -10,14 +10,14 @@ const Navigation: React.FC<NavigationProps> = ({ showAgentsLink = true }) => {
   return (
     <nav>
       <div className="nav-container">
-        <Link to="/" className="logo" aria-label="AGUnblock home">
-          <img src={logo} alt="AGUnblock logo" className="logo-img" />
+        <Link to="/" className="logo" aria-label="gitagu home">
+          <img src={logo} alt="gitagu logo" className="logo-img" />
         </Link>
 
         <div className="nav-links">
           {showAgentsLink && <a href={showAgentsLink ? "#agents" : "/#agents"}>Agents</a>}
           <a
-            href="https://github.com/microsoft/agunblock"
+            href="https://github.com/microsoft/gitagu"
             className="github-btn"
             target="_blank"
             rel="noopener noreferrer"

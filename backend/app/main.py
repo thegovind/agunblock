@@ -15,9 +15,9 @@ log_level = os.getenv("LOG_LEVEL", "INFO")
 setup_logging(level=log_level, format_style="detailed")
 logger = get_api_logger()
 
-app = FastAPI(title="AGUnblock Backend", description="Backend API for AGUnblock")
+app = FastAPI(title="gitagu Backend", description="Backend API for gitagu")
 
-logger.info("Starting AGUnblock Backend API")
+logger.info("Starting gitagu Backend API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,7 +36,7 @@ def get_agent_service():
 @app.get("/")
 async def root():
     logger.info("Root endpoint accessed")
-    return {"message": "AGUnblock Backend API", "status": "healthy"}
+    return {"message": "gitagu Backend API", "status": "healthy"}
 
 @app.get("/health")
 async def health_check():
@@ -45,7 +45,7 @@ async def health_check():
         # Basic health check - could be extended to check dependencies
         return {
             "status": "healthy",
-            "service": "AGUnblock Backend",
+            "service": "gitagu Backend",
             "timestamp": "2025-01-27T08:00:00Z"
         }
     except Exception as e:
