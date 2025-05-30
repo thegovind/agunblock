@@ -126,6 +126,8 @@ const HomePage: React.FC = () => {
       <section className="hero">
         <div className="hero-content">
           
+          <h1 className="hero-title">Onboarding Agent to turbocharge SDLC</h1>
+          
           <div className="hero-input-section">
             <div className="repo-input-container-hero">
               <input
