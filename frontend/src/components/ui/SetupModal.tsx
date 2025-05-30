@@ -44,7 +44,7 @@ const SetupModal: React.FC<SetupModalProps> = ({ isOpen, onClose, agent }) => {
       <div className="fullscreen-modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="fullscreen-modal-header">
           <div className="fullscreen-modal-logo">
-            <img src={logo} alt="AGUnblock Logo" className="modal-logo" />
+            <img src={logo} alt="gitagu Logo" className="modal-logo" />
           </div>
           <h2 className="fullscreen-modal-title">Setup Guide: {agent.name}</h2>
           <div className="modal-close-section">

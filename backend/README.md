@@ -1,6 +1,6 @@
-# AGUnblock Backend
+# gitagu Backend
 
-This is the backend API for AGUnblock, an open-source utility under Microsoft that helps developers leverage AI agents for their Software Development Life Cycle (SDLC).
+This is the backend API for gitagu, an open-source utility under Microsoft that helps developers leverage AI agents for their Software Development Life Cycle (SDLC).
 
 ## Features
 
@@ -38,7 +38,7 @@ Create a `.env` file in the root directory with the following variables:
 # Azure AI Agents Configuration
 AZURE_AI_AGENTS_ENDPOINT=your_endpoint
 AZURE_AI_AGENTS_API_KEY=your_api_key
-AZURE_AI_AGENTS_PROJECT_NAME=agunblock
+AZURE_AI_AGENTS_PROJECT_NAME=gitagu
 
 # GitHub API Configuration
 GITHUB_TOKEN=your_github_token
@@ -88,8 +88,8 @@ Response:
 
 ## Learn More
 
-Visit [agunblock.com](https://agunblock.com) to see the live application and explore how AI agents can enhance your development workflow.
+Visit [gitagu.com](https://gitagu.com) to see the live application and explore how AI agents can enhance your development workflow.
 
 ---
 
-© 2025 Microsoft Corporation. AGUnblock is an open source project.
+© 2025 Microsoft Corporation. gitagu is an open source project.

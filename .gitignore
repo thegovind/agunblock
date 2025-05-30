@@ -452,3 +452,5 @@ __blobstorage__/
 src/nohup.out
 
 frontend/.vite/deps/
+
+get-docker.sh
