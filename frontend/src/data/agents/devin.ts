@@ -36,6 +36,13 @@ const devin: Agent = {
       ]
     },
     {
+      title: 'Setup Devin for Enterprise',
+      description: 'Learn about enterprise use cases and best practices for using Devin effectively at scale. Understanding how to slice work into isolated, repetitive subtasks is crucial for maximizing ROI.',
+      links: [
+        { text: 'Enterprise Use Cases Guide', url: 'https://docs.devin.ai/enterprise/use-cases/guide' }
+      ]
+    },
+    {
       title: 'Configure GitHub Integration',
       description: 'Connect your GitHub account to Devin to enable repository access and code changes.',
       links: [

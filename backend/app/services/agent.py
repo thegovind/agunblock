@@ -952,3 +952,155 @@ GitHub Copilot supports this repository's programming languages and can provide:
         if lookup_id in agent_specific_instructions:
             return base_instructions + "\n\n" + agent_specific_instructions[lookup_id]
         return base_instructions
+
+    async def breakdown_user_request(self, user_request: str) -> Dict[str, Any]:
+        """
+        Break down a user request into multiple manageable tasks for Devin sessions.
+        
+        Args:
+            user_request: The user's description of work they want done
+            
+        Returns:
+            Dictionary containing a list of tasks with titles and descriptions
+        """
+        print(f"[BREAKDOWN] Breaking down user request: {user_request[:100]}...")
+        start_time = time.time()
+        
+        if not self.endpoint or self.endpoint == "your_endpoint":
+            raise ValueError("Azure AI Project endpoint is not configured. Please set AZURE_AI_PROJECT_CONNECTION_STRING in your environment.")
+        
+        if not self.credential:
+            raise ValueError("Azure AI Agents credentials are not configured. Please run 'az login' for DefaultAzureCredential or set AZURE_AI_AGENTS_API_KEY in your environment.")
+        
+        try:
+            async with AgentsClient(endpoint=self.endpoint, credential=self.credential) as client:
+                return await self._process_task_breakdown(client, user_request, start_time)
+        except Exception as e:
+            print(f"[BREAKDOWN] Error during task breakdown: {str(e)}")
+            raise RuntimeError(f"Task breakdown failed: {str(e)}")
+
+    async def _process_task_breakdown(self, client: AgentsClient, user_request: str, start_time: float) -> Dict[str, Any]:
+        """Process the task breakdown using Azure AI Agents API."""
+        print(f"[BREAKDOWN] Creating task breakdown agent...")
+        
+        breakdown_instructions = (
+            "You are a Task Breakdown Assistant. Your job is to take a user's high-level request "
+            "and break it down into 3-6 smaller, manageable tasks that can each be completed independently "
+            "by an AI coding assistant like Devin.\n\n"
+            "Guidelines:\n"
+            "- Each task should be specific and actionable\n"
+            "- Tasks should be independent of each other when possible\n"
+            "- Each task should be completable in a reasonable amount of time (1-3 hours)\n"
+            "- Include enough detail so each task is clear\n"
+            "- Focus on coding, development, and technical implementation tasks\n\n"
+            "Output format:\n"
+            "Return a JSON object with a 'tasks' array containing objects with 'title' and 'description' fields.\n"
+            "Example:\n"
+            "{\n"
+            "  \"tasks\": [\n"
+            "    {\n"
+            "      \"title\": \"Create user authentication API\",\n"
+            "      \"description\": \"Implement login and registration endpoints with JWT token generation\"\n"
+            "    },\n"
+            "    {\n"
+            "      \"title\": \"Add user profile management\",\n"
+            "      \"description\": \"Create endpoints for users to view and update their profile information\"\n"
+            "    }\n"
+            "  ]\n"
+            "}"
+        )
+        
+        agent = await client.create_agent(
+            model=self.model_deployment,
+            name="task-breakdown-assistant",
+            instructions=breakdown_instructions,
+        )
+        
+        print(f"[BREAKDOWN] Processing user request...")
+        content = f"Please break down this user request into manageable tasks:\n\n{user_request}"
+        
+        run = await client.create_thread_and_process_run(
+            agent_id=agent.id,
+            thread=AgentThreadCreationOptions(
+                messages=[ThreadMessageOptions(role="user", content=content)]
+            ),
+        )
+        
+        if run.status == "failed":
+            error_msg = f"Task breakdown failed: {run.last_error if run.last_error else 'Unknown error'}"
+            print(f"[BREAKDOWN] {error_msg}")
+            raise RuntimeError(error_msg)
+        
+        print(f"[BREAKDOWN] Retrieving breakdown results...")
+        
+        # List all messages in the thread, in ascending order of creation
+        messages = client.messages.list(
+            thread_id=run.thread_id,
+            order=ListSortOrder.ASCENDING,
+        )
+        
+        result_content = ""
+        async for msg in messages:
+            if msg.role == "assistant":
+                last_part = msg.content[-1]
+                if isinstance(last_part, MessageTextContent):
+                    result_content = last_part.text.value
+                    break
+        
+        # Clean up the agent
+        try:
+            await client.delete_agent(agent.id)
+            print(f"[BREAKDOWN] Deleted agent {agent.id}")
+        except Exception as e:
+            print(f"[BREAKDOWN] Warning: Could not delete agent {agent.id}: {str(e)}")
+        
+        if not result_content:
+            print(f"[BREAKDOWN] No breakdown results found after {time.time() - start_time:.2f} seconds")
+            raise RuntimeError("No breakdown results found")
+        
+        try:
+            # Parse the JSON response
+            import json
+            # Try to extract JSON from the response
+            if "```json" in result_content:
+                # Extract JSON from code block
+                json_start = result_content.find("```json") + 7
+                json_end = result_content.find("```", json_start)
+                json_content = result_content[json_start:json_end].strip()
+            elif "{" in result_content and "}" in result_content:
+                # Try to find JSON in the response
+                json_start = result_content.find("{")
+                json_end = result_content.rfind("}") + 1
+                json_content = result_content[json_start:json_end]
+            else:
+                # If no JSON found, create a default structure
+                raise ValueError("No JSON found in response")
+            
+            breakdown_result = json.loads(json_content)
+            
+            # Validate the structure
+            if "tasks" not in breakdown_result or not isinstance(breakdown_result["tasks"], list):
+                raise ValueError("Invalid response structure")
+            
+            for task in breakdown_result["tasks"]:
+                if "title" not in task or "description" not in task:
+                    raise ValueError("Task missing required fields")
+            
+            print(f"[BREAKDOWN] Successfully parsed {len(breakdown_result['tasks'])} tasks in {time.time() - start_time:.2f} seconds")
+            return breakdown_result
+            
+        except (json.JSONDecodeError, ValueError) as e:
+            print(f"[BREAKDOWN] Failed to parse JSON response: {str(e)}")
+            print(f"[BREAKDOWN] Raw response: {result_content}")
+            
+            # Fallback: create a single task from the original request
+            fallback_result = {
+                "tasks": [
+                    {
+                        "title": "Complete the requested work",
+                        "description": user_request
+                    }
+                ]
+            }
+            print(f"[BREAKDOWN] Using fallback task breakdown")
+            return fallback_result

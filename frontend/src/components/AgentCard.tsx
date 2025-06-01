@@ -3,6 +3,7 @@ import { ExternalLink } from 'lucide-react';
 import { Agent } from '../types/agent';
 import { getAgentLogo } from '../utils/agentUtils';
 import SetupModal from './ui/SetupModal';
+import MultiDevinModal from './ui/MultiDevinModal';
 
 interface AgentCardProps {
   agent: Agent;
@@ -65,6 +66,7 @@ const AgentCard: React.FC<AgentCardProps> = ({
   onAnalyzeClick 
 }) => {
   const [setupModalOpen, setSetupModalOpen] = useState(false);
+  const [multiDevinModalOpen, setMultiDevinModalOpen] = useState(false);
 
   return (
     <div className="agent-card" data-category={agent.category}>
@@ -183,6 +185,14 @@ const AgentCard: React.FC<AgentCardProps> = ({
             >
               Setup Guide
             </button>
+            {agent.id === 'devin' && (
+              <button 
+                className="agent-btn secondary"
+                onClick={() => setMultiDevinModalOpen(true)}
+              >
+                Multi Devin
+              </button>
+            )}
             <a 
               href={agent.url} 
               target="_blank" 
@@ -200,6 +210,13 @@ const AgentCard: React.FC<AgentCardProps> = ({
         onClose={() => setSetupModalOpen(false)}
         agent={agent}
       />
+      
+      {agent.id === 'devin' && (
+        <MultiDevinModal 
+          isOpen={multiDevinModalOpen}
+          onClose={() => setMultiDevinModalOpen(false)}
+        />
+      )}
     </div>
   );
 };
