@@ -4,7 +4,7 @@ from fastapi.responses import StreamingResponse
 import json
 import asyncio
 import os
-from .models.schemas import RepositoryAnalysisRequest, RepositoryAnalysisResponse, RepositoryInfoResponse, AnalysisProgressUpdate
+from .models.schemas import RepositoryAnalysisRequest, RepositoryAnalysisResponse, RepositoryInfoResponse, AnalysisProgressUpdate, TaskBreakdownRequest, TaskBreakdownResponse, Task, DevinSessionRequest, DevinSessionResponse
 from .services.github import GitHubService
 from .services.agent import AzureAgentService
 from .config import CORS_ORIGINS
@@ -246,3 +246,97 @@ async def get_repository_info(
         error_msg = f"Unexpected error: {str(e)}"
         print(error_msg)
         raise HTTPException(status_code=500, detail=error_msg)
+
+@app.post("/api/breakdown-tasks", response_model=TaskBreakdownResponse)
+async def breakdown_tasks(
+    request: TaskBreakdownRequest,
+    agent_service: AzureAgentService = Depends(get_agent_service)
+):
+    """Break down a user request into multiple tasks for Devin sessions."""
+    try:
+        logger.info(f"Breaking down task: {request.request[:100]}...")
+        print(f"Breaking down task: {request.request[:100]}...")
+        
+        # Use the existing agent service to break down the task
+        breakdown_result = await agent_service.breakdown_user_request(request.request)
+        
+        # Convert the result to our Task models
+        tasks = [
+            Task(title=task["title"], description=task["description"])
+            for task in breakdown_result["tasks"]
+        ]
+        
+        logger.info(f"Successfully broke down request into {len(tasks)} tasks")
+        return TaskBreakdownResponse(tasks=tasks)
+        
+    except Exception as e:
+        logger.error(f"Error breaking down tasks: {str(e)}", exc_info=True)
+        print(f"Error breaking down tasks: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to break down tasks: {str(e)}")
+
+@app.post("/api/create-devin-session", response_model=DevinSessionResponse)
+async def create_devin_session(request: DevinSessionRequest):
+    """Proxy endpoint to create a Devin session."""
+    try:
+        import httpx
+        
+        logger.info(f"Creating Devin session with prompt: {request.prompt[:100]}...")
+        print(f"Creating Devin session with prompt: {request.prompt[:100]}...")
+        
+        # Prepare the payload for Devin API
+        payload = {
+            "prompt": request.prompt
+        }
+        
+        if request.snapshot_id:
+            payload["snapshot_id"] = request.snapshot_id
+            
+        if request.playbook_id:
+            payload["playbook_id"] = request.playbook_id
+        
+        # Make the request to Devin API
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.devin.ai/v1/sessions",
+                headers={
+                    "Authorization": f"Bearer {request.api_key}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+                timeout=30.0
+            )
+            
+            if response.status_code != 200:
+                error_detail = f"Devin API error: {response.status_code}"
+                try:
+                    error_data = response.json()
+                    error_detail += f" - {error_data}"
+                except:
+                    error_detail += f" - {response.text}"
+                
+                logger.error(f"Devin API error: {error_detail}")
+                raise HTTPException(status_code=response.status_code, detail=error_detail)
+            
+            session_data = response.json()
+            
+            # Extract session info
+            session_id = session_data.get("session_id") or session_data.get("id")
+            if not session_id:
+                raise HTTPException(status_code=500, detail="No session ID returned from Devin API")
+            
+            # Remove "devin-" prefix if present for the URL
+            clean_session_id = session_id.replace("devin-", "") if session_id.startswith("devin-") else session_id
+            session_url = f"https://app.devin.ai/sessions/{clean_session_id}"
+            
+            logger.info(f"Successfully created Devin session: {session_id}")
+            return DevinSessionResponse(
+                session_id=session_id,
+                session_url=session_url
+            )
+            
+    except httpx.RequestError as e:
+        logger.error(f"Network error calling Devin API: {str(e)}")
+        raise HTTPException(status_code=503, detail=f"Failed to connect to Devin API: {str(e)}")
+    except Exception as e:
+        logger.error(f"Error creating Devin session: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to create Devin session: {str(e)}")

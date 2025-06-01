@@ -41,3 +41,25 @@ class AnalysisProgressUpdate(BaseModel):
     progress_percentage: int  # 0-100
     elapsed_time: Optional[float] = None
     details: Optional[Dict[str, Any]] = None
+
+# Task breakdown models
+class TaskBreakdownRequest(BaseModel):
+    request: str
+
+class Task(BaseModel):
+    title: str
+    description: str
+
+class TaskBreakdownResponse(BaseModel):
+    tasks: List[Task]
+
+# Devin session models
+class DevinSessionRequest(BaseModel):
+    api_key: str
+    prompt: str
+    snapshot_id: Optional[str] = None
+    playbook_id: Optional[str] = None
+
+class DevinSessionResponse(BaseModel):
+    session_id: str
+    session_url: str
