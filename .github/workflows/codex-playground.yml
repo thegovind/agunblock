@@ -1,0 +1,101 @@
+name: Codex Playground Task
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Natural-language task for Codex"
+        required: true
+      task_id:
+        description: "Unique task identifier"
+        required: true
+      azure_openai_endpoint:
+        description: "Azure OpenAI endpoint"
+        required: true
+      azure_openai_key:
+        description: "Azure OpenAI API key"
+        required: true
+      azure_openai_deployment:
+        description: "Azure OpenAI deployment name"
+        required: true
+        default: "gpt-4o"
+
+jobs:
+  codex-task:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          pip install openai
+          
+      - name: Execute Codex task
+        env:
+          AZURE_OPENAI_ENDPOINT: ${{ github.event.inputs.azure_openai_endpoint }}
+          AZURE_OPENAI_KEY: ${{ github.event.inputs.azure_openai_key }}
+          AZURE_OPENAI_DEPLOYMENT: ${{ github.event.inputs.azure_openai_deployment }}
+        run: |
+          echo "=== CODEX PLAYGROUND TASK ==="
+          echo "Task ID: ${{ github.event.inputs.task_id }}"
+          echo "Prompt: ${{ github.event.inputs.prompt }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "================================"
+          
+          python -c "
+          import openai
+          import os
+          import sys
+          
+          try:
+              client = openai.AzureOpenAI(
+                  api_key=os.environ['AZURE_OPENAI_KEY'],
+                  azure_endpoint=os.environ['AZURE_OPENAI_ENDPOINT'],
+                  api_version='2024-04-01-preview'
+              )
+              
+              prompt = '''${{ github.event.inputs.prompt }}'''
+              
+              response = client.chat.completions.create(
+                  model=os.environ['AZURE_OPENAI_DEPLOYMENT'],
+                  messages=[{
+                      'role': 'system', 
+                      'content': 'You are Codex, an AI assistant that helps with coding tasks. Provide clear, practical code solutions and explanations.'
+                  }, {
+                      'role': 'user', 
+                      'content': prompt
+                  }],
+                  max_tokens=2000,
+                  temperature=0.1
+              )
+              
+              print('\\n=== CODEX RESPONSE ===')
+              print(response.choices[0].message.content)
+              print('\\n=== END RESPONSE ===')
+              
+          except Exception as e:
+              print(f'Error: {str(e)}')
+              sys.exit(1)
+          "
+          
+      - name: Create output summary
+        run: |
+          echo "Task completed successfully" > task_summary.txt
+          echo "Task ID: ${{ github.event.inputs.task_id }}" >> task_summary.txt
+          echo "Timestamp: $(date)" >> task_summary.txt
+          
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: codex-output-${{ github.event.inputs.task_id }}
+          path: |
+            task_summary.txt
+            .
+          retention-days: 7
