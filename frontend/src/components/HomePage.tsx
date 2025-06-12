@@ -110,6 +110,7 @@ const HomePage: React.FC = () => {
           <div className="nav-links">
             <a href="#agents">Agents</a>
             <a href="#integration">Ecosystem</a>
+            <Link to="/azure-openai-team">Azure OpenAI Team</Link>
             <a
               href="https://github.com/microsoft/gitagu"
               className="github-link"
