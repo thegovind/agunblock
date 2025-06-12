@@ -249,6 +249,7 @@ const RepoPage: React.FC = () => {
 
         <div className="nav-links">
           <Link to="/">Home</Link>
+          <Link to="/azure-openai-team">Azure OpenAI Team</Link>
           <a
             href="https://github.com/microsoft/gitagu"
             className="github-link"
