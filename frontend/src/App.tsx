@@ -7,6 +7,7 @@ import './App.css';
 
 import HomePage from './components/HomePage';
 import RepoPage from './components/RepoPage';
+import SailSummitRegistration from './components/SailSummitRegistration';
 
 /**
  * Main App component that handles routing
@@ -16,10 +17,13 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/sail-summit-registration" element={<SailSummitRegistration />} />
         <Route path="/:org/:repo" element={<RepoPage />} />
       </Routes>
     </Router>
   );
 }
+
+// 
 
 export default App;
