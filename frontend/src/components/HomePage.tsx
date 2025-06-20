@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
-import { AgentCategory } from '../types/agent';
-import agents from '../data/agents';
-import AgentCard from './AgentCard';
+
 import logo from '../assets/logo.png';
 
 const HomePage: React.FC = () => {
@@ -40,11 +38,7 @@ const HomePage: React.FC = () => {
     if (e.key === 'Enter') analyzeRepo();
   };
 
-  const [activeCategory, setActiveCategory] =
-    useState<AgentCategory>('async-swe');
-  const filteredAgents = agents.filter(
-    (a) => activeCategory === 'all' || a.category === activeCategory
-  );
+
 
   /* fetch GitHub star count */
   useEffect(() => {
@@ -111,12 +105,12 @@ const HomePage: React.FC = () => {
             <a href="#agents">Agents</a>
             <a href="#integration">Ecosystem</a>
             <a
-              href="https://github.com/microsoft/gitagu"
+              href="https://github.com/thegovind/agunblock"
               className="github-link"
               target="_blank"
               rel="noopener noreferrer"
             >
-              microsoft/gitagu {starCount && `⭐ ${starCount}`}
+              thegovind/agunblock {starCount && `⭐ ${starCount}`}
             </a>
           </div>
         </div>
@@ -126,7 +120,7 @@ const HomePage: React.FC = () => {
       <section className="hero">
         <div className="hero-content">
           
-          <h1 className="hero-title">Onboarding Agent to turbocharge SDLC</h1>
+          <h1 className="hero-title">AgentUnblock - Your Gateway to AI-Powered Development</h1>
           
           <div className="hero-input-section">
             <div className="repo-input-container-hero">
@@ -165,42 +159,94 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* ---------- AGENT CATEGORIES ---------- */}
+      {/* ---------- MAIN INTERACTION CARDS ---------- */}
       <section className="categories" id="agents">
         <div className="categories-content">
-          <h2 className="section-title">Agents by Category</h2>
+          <h2 className="section-title">Choose Your Development Path</h2>
           <p className="section-subtitle">
-            Find the perfect SDLC agent for each stage of your development lifecycle
+            Three powerful ways to integrate AI agents into your development workflow
           </p>
 
-          <div className="category-tabs">
-            {(['all', 'code-completion', 'async-swe', 'cli', 'devops'] as const).map(
-              (cat) => (
-                <div
-                  key={cat}
-                  className={`category-tab ${
-                    activeCategory === cat ? 'active' : ''
-                  }`}
-                  onClick={() => setActiveCategory(cat)}
+          <div className="main-cards-grid">
+            {/* GitAgu Integration Card */}
+            <div className="main-card gitagu-card">
+              <div className="main-card-header">
+                <div className="main-card-icon">🔧</div>
+                <h3>GitAgu Integration</h3>
+              </div>
+              <p className="main-card-description">
+                Analyze your repositories and get tailored setup instructions for various AI coding agents. 
+                Perfect for discovering which agents work best with your specific codebase.
+              </p>
+              <div className="main-card-features">
+                <ul>
+                  <li>Repository analysis and recommendations</li>
+                  <li>Step-by-step agent setup guides</li>
+                  <li>Support for Devin, GitHub Copilot, Codex CLI, and more</li>
+                  <li>Azure integration and deployment assistance</li>
+                </ul>
+              </div>
+              <div className="main-card-actions">
+                <a 
+                  href="https://gitagu.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="main-card-btn primary"
                 >
-                  {cat === 'all'
-                    ? 'All Agents'
-                    : cat === 'code-completion'
-                    ? 'Code Completion Agent'
-                    : cat === 'async-swe'
-                    ? 'Async SWE Agent'
-                    : cat === 'cli'
-                    ? 'CLI-based Sync Agent'
-                    : 'DevOps Agent'}
-                </div>
-              )
-            )}
-          </div>
+                  Explore GitAgu
+                </a>
+              </div>
+            </div>
 
-          <div className="agents-grid">
-            {filteredAgents.map((agent) => (
-              <AgentCard key={agent.id} agent={agent} />
-            ))}
+            {/* Teams App Card */}
+            <div className="main-card teams-card">
+              <div className="main-card-header">
+                <div className="main-card-icon">💬</div>
+                <h3>Teams App Integration</h3>
+              </div>
+              <p className="main-card-description">
+                Invoke coding agents directly from Microsoft Teams. Collaborate with your team and 
+                trigger AI-powered development tasks without leaving your communication hub.
+              </p>
+              <div className="main-card-features">
+                <ul>
+                  <li>Direct agent invocation from Teams chat</li>
+                  <li>Team collaboration on AI-assisted tasks</li>
+                  <li>Real-time progress updates and notifications</li>
+                  <li>Seamless integration with your existing workflow</li>
+                </ul>
+              </div>
+              <div className="main-card-actions">
+                <button className="main-card-btn primary" disabled>
+                  Coming Soon
+                </button>
+              </div>
+            </div>
+
+            {/* GitHub Marketplace Action Card */}
+            <div className="main-card marketplace-card">
+              <div className="main-card-header">
+                <div className="main-card-icon">⚡</div>
+                <h3>GitHub Marketplace Action</h3>
+              </div>
+              <p className="main-card-description">
+                Automate your development workflow with GitHub Actions. Configure multiple coding agents 
+                like Devin, Codex, or GitHub Copilot directly in your CI/CD pipeline.
+              </p>
+              <div className="main-card-features">
+                <ul>
+                  <li>GitHub Actions workflow integration</li>
+                  <li>Multi-agent configuration and management</li>
+                  <li>Automated code reviews and improvements</li>
+                  <li>Secure API key and credential management</li>
+                </ul>
+              </div>
+              <div className="main-card-actions">
+                <button className="main-card-btn primary" disabled>
+                  Coming Soon
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -254,7 +300,7 @@ const HomePage: React.FC = () => {
       <footer>
         <div className="footer-content">
           <p style={{ color: 'var(--text-secondary)' }}>
-            © {new Date().getFullYear()} Microsoft Corporation. gitagu is an
+            © {new Date().getFullYear()} Microsoft Corporation. agentunblock is an
             open source project, powered by Azure AI Foundry Agents Service.
           </p>
         </div>
